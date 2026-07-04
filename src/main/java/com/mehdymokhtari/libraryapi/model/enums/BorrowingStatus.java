@@ -1,4 +1,6 @@
 package com.mehdymokhtari.libraryapi.model.enums;
 
-public class BorrowingStatus {
+public enum BorrowingStatus {
+    BORROWED,
+    RETURNED
 }

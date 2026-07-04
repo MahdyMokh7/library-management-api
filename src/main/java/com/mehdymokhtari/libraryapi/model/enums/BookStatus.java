@@ -1,4 +1,6 @@
 package com.mehdymokhtari.libraryapi.model.enums;
 
-public class BookStatus {
+public enum BookStatus {
+    AVAILABLE,
+    BORROWED
 }
