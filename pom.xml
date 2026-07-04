@@ -27,7 +27,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <spring-boot.version>3.2.4</spring-boot.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.30</lombok.version>
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
@@ -35,20 +34,6 @@
         <testcontainers.version>1.19.7</testcontainers.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <spotless-maven-plugin.version>2.41.0</spotless-maven-plugin.version>
-        <sonar.organization>mehdymokhtari</sonar.organization>
-        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-        <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.coverage.exclusions>
-            **/config/**,
-            **/exception/**,
-            **/dto/**,
-            **/model/entity/**,
-            **/enums/**,
-            **/mapper/**,
-            **/util/**,
-            **/filter/**,
-            **/LibraryManagementApplication.java
-        </sonar.coverage.exclusions>
     </properties>
 
     <dependencies>
@@ -359,57 +344,6 @@
             <properties>
                 <spring.profiles.active>prod</spring.profiles.active>
             </properties>
-        </profile>
-
-        <profile>
-            <id>docker</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.fabric8</groupId>
-                        <artifactId>docker-maven-plugin</artifactId>
-                        <version>0.44.0</version>
-                        <configuration>
-                            <images>
-                                <image>
-                                    <name>${project.artifactId}:${project.version}</name>
-                                    <build>
-                                        <dockerFile>${project.basedir}/Dockerfile</dockerFile>
-                                        <tags>
-                                            <tag>latest</tag>
-                                        </tags>
-                                    </build>
-                                </image>
-                            </images>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>build</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <id>sonar</id>
-            <properties>
-                <sonar.projectKey>mehdymokhtari_library-management-system</sonar.projectKey>
-                <sonar.projectName>Library Management System</sonar.projectName>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonarsource.scanner.maven</groupId>
-                        <artifactId>sonar-maven-plugin</artifactId>
-                        <version>3.10.0.2594</version>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>
