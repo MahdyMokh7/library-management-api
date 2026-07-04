@@ -1,39 +1,51 @@
+# Maven
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+# IDE
+.idea/
 *.iml
+*.iws
 *.ipr
-
-### Eclipse ###
-.apt_generated
+.vscode/
+.settings/
 .classpath
-.factorypath
 .project
-.settings
+.factorypath
 .springBeans
 .sts4-cache
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Logs
+logs/
+*.log
 
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+# OS
 .DS_Store
+Thumbs.db
+
+# Environment
+.env
+*.local
+application-local.yml
+application-dev-local.yml
+
+# Docker
+*.pid
+docker-compose.override.yml
+
+# Test
+*.pid
+test-output/
+
+# Others
+*.swp
+*~
+.~lock.*

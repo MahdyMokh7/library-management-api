@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/library_db}
+    username: ${SPRING_DATASOURCE_USERNAME:library_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:library_password}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: ${SPRING_FLYWAY_ENABLED:true}
+
+logging:
+  level:
+    com.mehdymokhtari.libraryapi: INFO
+
+server:
+  port: ${SERVER_PORT:8080}
