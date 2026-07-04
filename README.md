@@ -51,8 +51,8 @@ Before running the project, ensure you have the following installed:
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/yourusername/library-management-system.git
-cd library-management-system
+git clone https://github.com/MahdyMokh7/library-management-api.git
+cd library-management-api
 
 # 2. Build the Docker image
 docker build -t library-api:1.0.0 .
@@ -79,8 +79,8 @@ curl http://localhost:8080/actuator/health
 
 #### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/library-management-system.git
-cd library-management-system
+git clone https://github.com/MahdyMokh7/library-management-api.git
+cd library-management-api
 ```
 
 #### 2. Configure Database
@@ -141,7 +141,7 @@ mvn spring-boot:run
 ## 🏗️ Project Structure
 
 ```
-library-management-system/
+library-management-api/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/mehdymokhtari/libraryapi/
