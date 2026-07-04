@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
+// Uses BEAN Validator (like @NotBlank, @Size, @NotNull, etc.)
 public record BookUpdateRequest(
         @NotBlank(message = "Title is required")
         @Size(max = 255, message = "Title must not exceed 255 characters")

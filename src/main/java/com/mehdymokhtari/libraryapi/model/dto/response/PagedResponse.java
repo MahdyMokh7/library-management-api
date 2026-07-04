@@ -6,7 +6,6 @@ public record PagedResponse<T>(
         List<T> content,
         int pageNumber,
         int pageSize,
-        long totalElements,
-        int totalPages,
+        long totalElements,        int totalPages,
         boolean last
 ) {}

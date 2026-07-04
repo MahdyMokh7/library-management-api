@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
+// Uses BEAN Validator (like @NotBlank, @Positive, @NotNull, etc.)
 public record BorrowRequest(
         @NotNull(message = "Book ID is required")
         @Positive(message = "Book ID must be a positive number")
