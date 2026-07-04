@@ -163,7 +163,6 @@ library-management-system/
 │   │   │   └── util/                # Utility classes
 │   │   └── resources/
 │   │       ├── application.yml      # Main configuration
-│   │       ├── application-dev.yml  # Development config
 │   │       ├── application-docker.yml # Docker-specific config
 │   │       ├── db/migration/        # Flyway migrations
 │   │       └── static/              # Static resources
