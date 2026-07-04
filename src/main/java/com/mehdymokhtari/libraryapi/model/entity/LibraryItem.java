@@ -1,4 +1,4 @@
 package com.mehdymokhtari.libraryapi.model.entity;
 
-public class Book extends LibraryItem{
+public abstract class LibraryItem {
 }
