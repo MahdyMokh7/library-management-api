@@ -19,289 +19,276 @@ import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 @DataJpaTest
 class BorrowingRecordRepositoryTest {
 
-  @Autowired private BorrowingRecordRepository borrowingRecordRepository;
+    @Autowired
+    private BorrowingRecordRepository borrowingRecordRepository;
 
-  @Autowired private BookRepository bookRepository;
+    @Autowired
+    private BookRepository bookRepository;
 
-  private Book book1;
-  private Book book2;
-  private BorrowingRecord record1;
-  private BorrowingRecord record2;
-  private BorrowingRecord record3;
+    private Book book1;
+    private Book book2;
+    private BorrowingRecord record1;
+    private BorrowingRecord record2;
+    private BorrowingRecord record3;
 
-  @BeforeEach
-  void setUp() {
-    book1 =
-        Book.builder()
-            .title("Clean Code")
-            .author("Robert Martin")
-            .isbn("9780132350884")
-            .publicationYear(2008)
-            .status(BookStatus.BORROWED)
-            .isDeleted(false)
-            .build();
+    @BeforeEach
+    void setUp() {
+        book1 = Book.builder()
+                .title("Clean Code")
+                .author("Robert Martin")
+                .isbn("9780132350884")
+                .publicationYear(2008)
+                .status(BookStatus.BORROWED)
+                .deleted(false)
+                .build();
 
-    book2 =
-        Book.builder()
-            .title("Effective Java")
-            .author("Joshua Bloch")
-            .isbn("9780134685991")
-            .publicationYear(2018)
-            .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
-            .build();
+        book2 = Book.builder()
+                .title("Effective Java")
+                .author("Joshua Bloch")
+                .isbn("9780134685991")
+                .publicationYear(2018)
+                .status(BookStatus.AVAILABLE)
+                .deleted(false)
+                .build();
 
-    bookRepository.saveAll(List.of(book1, book2));
+        bookRepository.saveAll(List.of(book1, book2));
 
-    record1 =
-        BorrowingRecord.builder()
-            .book(book1)
-            .borrowerName("John Doe")
-            .borrowedDate(LocalDate.now().minusDays(10))
-            .status(BorrowingStatus.BORROWED)
-            .build();
+        record1 = BorrowingRecord.builder()
+                .item(book1)
+                .borrowerName("John Doe")
+                .borrowedDate(LocalDate.now().minusDays(10))
+                .status(BorrowingStatus.BORROWED)
+                .build();
 
-    record2 =
-        BorrowingRecord.builder()
-            .book(book1)
-            .borrowerName("John Doe")
-            .borrowedDate(LocalDate.now().minusDays(30))
-            .returnDate(LocalDate.now().minusDays(20))
-            .status(BorrowingStatus.RETURNED)
-            .build();
+        record2 = BorrowingRecord.builder()
+                .item(book1)
+                .borrowerName("John Doe")
+                .borrowedDate(LocalDate.now().minusDays(30))
+                .returnDate(LocalDate.now().minusDays(20))
+                .status(BorrowingStatus.RETURNED)
+                .build();
 
-    record3 =
-        BorrowingRecord.builder()
-            .book(book2)
-            .borrowerName("Jane Smith")
-            .borrowedDate(LocalDate.now().minusDays(5))
-            .returnDate(LocalDate.now())
-            .status(BorrowingStatus.RETURNED)
-            .build();
+        record3 = BorrowingRecord.builder()
+                .item(book2)
+                .borrowerName("Jane Smith")
+                .borrowedDate(LocalDate.now().minusDays(5))
+                .returnDate(LocalDate.now())
+                .status(BorrowingStatus.RETURNED)
+                .build();
 
-    borrowingRecordRepository.saveAll(List.of(record1, record2, record3));
-  }
+        borrowingRecordRepository.saveAll(List.of(record1, record2, record3));
+    }
 
-  @Test
-  void shouldSaveBorrowingRecordSuccessfully() {
-    // Test: Save borrowing record and verify it has generated ID
-    BorrowingRecord newRecord =
-        BorrowingRecord.builder()
-            .book(book2)
-            .borrowerName("New User")
-            .borrowedDate(LocalDate.now())
-            .status(BorrowingStatus.BORROWED)
-            .build();
+    @Test
+    void shouldSaveBorrowingRecordSuccessfully() {
+        // Test: Save borrowing record and verify it has generated ID
+        BorrowingRecord newRecord = BorrowingRecord.builder()
+                .item(book2)
+                .borrowerName("New User")
+                .borrowedDate(LocalDate.now())
+                .status(BorrowingStatus.BORROWED)
+                .build();
 
-    BorrowingRecord saved = borrowingRecordRepository.save(newRecord);
+        BorrowingRecord saved = borrowingRecordRepository.save(newRecord);
 
-    assertThat(saved.getId()).isNotNull();
-    assertThat(saved.getBorrowerName()).isEqualTo("New User");
-    assertThat(saved.getStatus()).isEqualTo(BorrowingStatus.BORROWED);
-    assertThat(saved.getBorrowedDate()).isEqualTo(LocalDate.now());
-  }
+        assertThat(saved.getId()).isNotNull();
+        assertThat(saved.getBorrowerName()).isEqualTo("New User");
+        assertThat(saved.getStatus()).isEqualTo(BorrowingStatus.BORROWED);
+        assertThat(saved.getBorrowedDate()).isEqualTo(LocalDate.now());
+    }
 
-  @Test
-  void shouldFindByBookIdAndStatus() {
-    // Test: Find active borrowing record by book ID and status
-    Optional<BorrowingRecord> found =
-        borrowingRecordRepository.findByBookIdAndStatus(book1.getId(), BorrowingStatus.BORROWED);
+    @Test
+    void shouldFindByItemIdAndStatus() {
+        // Test: Find active borrowing record by item ID and status
+        Optional<BorrowingRecord> found =
+                borrowingRecordRepository.findByItemIdAndStatus(book1.getId(), BorrowingStatus.BORROWED);
 
-    assertThat(found).isPresent();
-    assertThat(found.get().getBook().getId()).isEqualTo(book1.getId());
-    assertThat(found.get().getBorrowerName()).isEqualTo("John Doe");
-    assertThat(found.get().getStatus()).isEqualTo(BorrowingStatus.BORROWED);
-  }
+        assertThat(found).isPresent();
+        assertThat(found.get().getItem().getId()).isEqualTo(book1.getId());
+        assertThat(found.get().getBorrowerName()).isEqualTo("John Doe");
+        assertThat(found.get().getStatus()).isEqualTo(BorrowingStatus.BORROWED);
+    }
 
-  @Test
-  void shouldReturnEmptyWhenNoActiveBorrowingRecord() {
-    // Test: Find by book ID and status returns empty when no matching record
-    Optional<BorrowingRecord> found =
-        borrowingRecordRepository.findByBookIdAndStatus(book2.getId(), BorrowingStatus.BORROWED);
+    @Test
+    void shouldReturnEmptyWhenNoActiveBorrowingRecord() {
+        // Test: Find by item ID and status returns empty when no matching record
+        Optional<BorrowingRecord> found =
+                borrowingRecordRepository.findByItemIdAndStatus(book2.getId(), BorrowingStatus.BORROWED);
 
-    assertThat(found).isEmpty();
-  }
+        assertThat(found).isEmpty();
+    }
 
-  @Test
-  void shouldFindAllByBookIdOrderedByBorrowedDateDesc() {
-    // Test: Get all borrowing records for a book ordered by borrowed date descending
-    List<BorrowingRecord> records =
-        borrowingRecordRepository.findAllByBookIdOrderByBorrowedDateDesc(book1.getId());
+    @Test
+    void shouldFindAllByItemIdOrderedByBorrowedDateDesc() {
+        // Test: Get all borrowing records for an item ordered by borrowed date descending
+        List<BorrowingRecord> records =
+                borrowingRecordRepository.findAllByItemIdOrderByBorrowedDateDesc(book1.getId());
 
-    assertThat(records).hasSize(2);
-    assertThat(records.get(0).getBorrowedDate()).isAfterOrEqualTo(records.get(1).getBorrowedDate());
-    assertThat(records.get(0).getStatus()).isEqualTo(BorrowingStatus.BORROWED);
-    assertThat(records.get(1).getStatus()).isEqualTo(BorrowingStatus.RETURNED);
-  }
+        assertThat(records).hasSize(2);
+        assertThat(records.get(0).getBorrowedDate()).isAfterOrEqualTo(records.get(1).getBorrowedDate());
+        assertThat(records.get(0).getStatus()).isEqualTo(BorrowingStatus.BORROWED);
+        assertThat(records.get(1).getStatus()).isEqualTo(BorrowingStatus.RETURNED);
+    }
 
-  @Test
-  void shouldReturnEmptyListWhenNoRecordsForBook() {
-    // Test: Get borrowing records for book with no records returns empty list
-    Book newBook =
-        Book.builder()
-            .title("New Book")
-            .author("New Author")
-            .isbn("9781234567897")
-            .publicationYear(2020)
-            .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
-            .build();
+    @Test
+    void shouldReturnEmptyListWhenNoRecordsForItem() {
+        // Test: Get borrowing records for item with no records returns empty list
+        Book newBook = Book.builder()
+                .title("New Book")
+                .author("New Author")
+                .isbn("9781234567897")
+                .publicationYear(2020)
+                .status(BookStatus.AVAILABLE)
+                .deleted(false)
+                .build();
 
-    bookRepository.save(newBook);
-    List<BorrowingRecord> records =
-        borrowingRecordRepository.findAllByBookIdOrderByBorrowedDateDesc(newBook.getId());
+        bookRepository.save(newBook);
+        List<BorrowingRecord> records =
+                borrowingRecordRepository.findAllByItemIdOrderByBorrowedDateDesc(newBook.getId());
 
-    assertThat(records).isEmpty();
-  }
+        assertThat(records).isEmpty();
+    }
 
-  @Test
-  void shouldFindByBookIdAndStatusWithMultipleStatuses() {
-    // Test: Find by book ID and different statuses
-    Optional<BorrowingRecord> active =
-        borrowingRecordRepository.findByBookIdAndStatus(book1.getId(), BorrowingStatus.BORROWED);
+    @Test
+    void shouldFindByItemIdAndStatusWithMultipleStatuses() {
+        // Test: Find by item ID and different statuses
+        Optional<BorrowingRecord> active =
+                borrowingRecordRepository.findByItemIdAndStatus(book1.getId(), BorrowingStatus.BORROWED);
 
-    Optional<BorrowingRecord> returned =
-        borrowingRecordRepository.findByBookIdAndStatus(book1.getId(), BorrowingStatus.RETURNED);
+        Optional<BorrowingRecord> returned =
+                borrowingRecordRepository.findByItemIdAndStatus(book1.getId(), BorrowingStatus.RETURNED);
 
-    assertThat(active).isPresent();
-    assertThat(active.get().getStatus()).isEqualTo(BorrowingStatus.BORROWED);
+        assertThat(active).isPresent();
+        assertThat(active.get().getStatus()).isEqualTo(BorrowingStatus.BORROWED);
 
-    assertThat(returned).isPresent();
-    assertThat(returned.get().getStatus()).isEqualTo(BorrowingStatus.RETURNED);
-  }
+        assertThat(returned).isPresent();
+        assertThat(returned.get().getStatus()).isEqualTo(BorrowingStatus.RETURNED);
+    }
 
-  @Test
-  void shouldCheckIfBookIsCurrentlyBorrowed() {
-    // Test: Check if book is currently borrowed using custom query
-    boolean isBorrowed = borrowingRecordRepository.isBookCurrentlyBorrowed(book1.getId());
-    boolean isNotBorrowed = borrowingRecordRepository.isBookCurrentlyBorrowed(book2.getId());
+    @Test
+    void shouldCheckIfItemIsCurrentlyBorrowed() {
+        // Test: Check if item is currently borrowed using custom query
+        boolean isBorrowed = borrowingRecordRepository.isItemCurrentlyBorrowed(book1.getId());
+        boolean isNotBorrowed = borrowingRecordRepository.isItemCurrentlyBorrowed(book2.getId());
 
-    assertThat(isBorrowed).isTrue();
-    assertThat(isNotBorrowed).isFalse();
-  }
+        assertThat(isBorrowed).isTrue();
+        assertThat(isNotBorrowed).isFalse();
+    }
 
-  @Test
-  void shouldFindAllBorrowingRecordsForBorrower() {
-    // Test: Find all borrowing records for a borrower by name
-    List<BorrowingRecord> records =
-        borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc(
-            "John");
+    @Test
+    void shouldFindAllBorrowingRecordsForBorrower() {
+        // Test: Find all borrowing records for a borrower by name
+        List<BorrowingRecord> records =
+                borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc("John");
 
-    assertThat(records).hasSize(2);
-    assertThat(records).allMatch(r -> r.getBorrowerName().contains("John"));
-    assertThat(records.get(0).getBorrowedDate()).isAfterOrEqualTo(records.get(1).getBorrowedDate());
-  }
+        assertThat(records).hasSize(2);
+        assertThat(records).allMatch(r -> r.getBorrowerName().contains("John"));
+        assertThat(records.get(0).getBorrowedDate()).isAfterOrEqualTo(records.get(1).getBorrowedDate());
+    }
 
-  @Test
-  void shouldReturnEmptyListWhenBorrowerNotFound() {
-    // Test: Find records for non-existing borrower returns empty list
-    List<BorrowingRecord> records =
-        borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc(
-            "Unknown");
+    @Test
+    void shouldReturnEmptyListWhenBorrowerNotFound() {
+        // Test: Find records for non-existing borrower returns empty list
+        List<BorrowingRecord> records =
+                borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc("Unknown");
 
-    assertThat(records).isEmpty();
-  }
+        assertThat(records).isEmpty();
+    }
 
-  @Test
-  void shouldFindBorrowingRecordsCaseInsensitiveByBorrowerName() {
-    // Test: Find by borrower name case-insensitive
-    List<BorrowingRecord> recordsLower =
-        borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc(
-            "john");
+    @Test
+    void shouldFindBorrowingRecordsCaseInsensitiveByBorrowerName() {
+        // Test: Find by borrower name case-insensitive
+        List<BorrowingRecord> recordsLower =
+                borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc("john");
 
-    List<BorrowingRecord> recordsUpper =
-        borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc(
-            "JOHN");
+        List<BorrowingRecord> recordsUpper =
+                borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc("JOHN");
 
-    assertThat(recordsLower).hasSize(2);
-    assertThat(recordsUpper).hasSize(2);
-    assertThat(recordsLower).containsExactlyInAnyOrderElementsOf(recordsUpper);
-  }
+        assertThat(recordsLower).hasSize(2);
+        assertThat(recordsUpper).hasSize(2);
+        assertThat(recordsLower).containsExactlyInAnyOrderElementsOf(recordsUpper);
+    }
 
-  @Test
-  void shouldCheckIfBorrowingRecordExistsByBookIdAndStatus() {
-    // Test: Check if borrowing record exists by book ID and status
-    boolean existsActive =
-        borrowingRecordRepository.existsByBookIdAndStatus(book1.getId(), BorrowingStatus.BORROWED);
+    @Test
+    void shouldCheckIfBorrowingRecordExistsByItemIdAndStatus() {
+        // Test: Check if borrowing record exists by item ID and status
+        boolean existsActive =
+                borrowingRecordRepository.existsByItemIdAndStatus(book1.getId(), BorrowingStatus.BORROWED);
 
-    boolean existsReturned =
-        borrowingRecordRepository.existsByBookIdAndStatus(book1.getId(), BorrowingStatus.RETURNED);
+        boolean existsReturned =
+                borrowingRecordRepository.existsByItemIdAndStatus(book1.getId(), BorrowingStatus.RETURNED);
 
-    boolean existsForBook2 =
-        borrowingRecordRepository.existsByBookIdAndStatus(book2.getId(), BorrowingStatus.RETURNED);
+        boolean existsForBook2 =
+                borrowingRecordRepository.existsByItemIdAndStatus(book2.getId(), BorrowingStatus.RETURNED);
 
-    assertThat(existsActive).isTrue();
-    assertThat(existsReturned).isTrue();
-    assertThat(existsForBook2).isTrue();
-  }
+        assertThat(existsActive).isTrue();
+        assertThat(existsReturned).isTrue();
+        assertThat(existsForBook2).isTrue();
+    }
 
-  @Test
-  void shouldReturnFalseWhenNoBorrowingRecordExists() {
-    // Test: Check if borrowing record exists with wrong status returns false
-    boolean exists =
-        borrowingRecordRepository.existsByBookIdAndStatus(book2.getId(), BorrowingStatus.BORROWED);
+    @Test
+    void shouldReturnFalseWhenNoBorrowingRecordExists() {
+        // Test: Check if borrowing record exists with wrong status returns false
+        boolean exists =
+                borrowingRecordRepository.existsByItemIdAndStatus(book2.getId(), BorrowingStatus.BORROWED);
 
-    assertThat(exists).isFalse();
-  }
+        assertThat(exists).isFalse();
+    }
 
-  @Test
-  void shouldFindAllBorrowingRecordsForBookInOrder() {
-    // Test: Find all records for a book sorted by borrowed date descending
-    Book newBook =
-        Book.builder()
-            .title("Spring in Action")
-            .author("Craig Walls")
-            .isbn("9781617294945")
-            .publicationYear(2018)
-            .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
-            .build();
+    @Test
+    void shouldFindAllBorrowingRecordsForItemInOrder() {
+        // Test: Find all records for an item sorted by borrowed date descending
+        Book newBook = Book.builder()
+                .title("Spring in Action")
+                .author("Craig Walls")
+                .isbn("9781617294945")
+                .publicationYear(2018)
+                .status(BookStatus.AVAILABLE)
+                .deleted(false)
+                .build();
 
-    bookRepository.save(newBook);
+        bookRepository.save(newBook);
 
-    BorrowingRecord recent =
-        BorrowingRecord.builder()
-            .book(newBook)
-            .borrowerName("User 1")
-            .borrowedDate(LocalDate.now())
-            .status(BorrowingStatus.BORROWED)
-            .build();
+        BorrowingRecord recent = BorrowingRecord.builder()
+                .item(newBook)
+                .borrowerName("User 1")
+                .borrowedDate(LocalDate.now())
+                .status(BorrowingStatus.BORROWED)
+                .build();
 
-    BorrowingRecord older =
-        BorrowingRecord.builder()
-            .book(newBook)
-            .borrowerName("User 2")
-            .borrowedDate(LocalDate.now().minusDays(15))
-            .returnDate(LocalDate.now().minusDays(5))
-            .status(BorrowingStatus.RETURNED)
-            .build();
+        BorrowingRecord older = BorrowingRecord.builder()
+                .item(newBook)
+                .borrowerName("User 2")
+                .borrowedDate(LocalDate.now().minusDays(15))
+                .returnDate(LocalDate.now().minusDays(5))
+                .status(BorrowingStatus.RETURNED)
+                .build();
 
-    borrowingRecordRepository.saveAll(List.of(recent, older));
+        borrowingRecordRepository.saveAll(List.of(recent, older));
 
-    List<BorrowingRecord> records =
-        borrowingRecordRepository.findAllByBookIdOrderByBorrowedDateDesc(newBook.getId());
+        List<BorrowingRecord> records =
+                borrowingRecordRepository.findAllByItemIdOrderByBorrowedDateDesc(newBook.getId());
 
-    assertThat(records).hasSize(2);
-    assertThat(records.get(0).getBorrowedDate()).isAfter(records.get(1).getBorrowedDate());
-    assertThat(records.get(0).getStatus()).isEqualTo(BorrowingStatus.BORROWED);
-  }
+        assertThat(records).hasSize(2);
+        assertThat(records.get(0).getBorrowedDate()).isAfter(records.get(1).getBorrowedDate());
+        assertThat(records.get(0).getStatus()).isEqualTo(BorrowingStatus.BORROWED);
+    }
 
-  @Test
-  void shouldSaveAndUpdateBorrowingRecordWithReturnDate() {
-    // Test: Save borrowing record and update with return date
-    BorrowingRecord newRecord =
-        BorrowingRecord.builder()
-            .book(book1)
-            .borrowerName("Test User")
-            .borrowedDate(LocalDate.now().minusDays(3))
-            .status(BorrowingStatus.BORROWED)
-            .build();
+    @Test
+    void shouldSaveAndUpdateBorrowingRecordWithReturnDate() {
+        // Test: Save borrowing record and update with return date
+        BorrowingRecord newRecord = BorrowingRecord.builder()
+                .item(book1)
+                .borrowerName("Test User")
+                .borrowedDate(LocalDate.now().minusDays(3))
+                .status(BorrowingStatus.BORROWED)
+                .build();
 
-    BorrowingRecord saved = borrowingRecordRepository.save(newRecord);
-    saved.markReturned();
-    BorrowingRecord updated = borrowingRecordRepository.save(saved);
+        BorrowingRecord saved = borrowingRecordRepository.save(newRecord);
+        saved.markReturned();
+        BorrowingRecord updated = borrowingRecordRepository.save(saved);
 
-    assertThat(updated.getReturnDate()).isNotNull();
-    assertThat(updated.getStatus()).isEqualTo(BorrowingStatus.RETURNED);
-  }
+        assertThat(updated.getReturnDate()).isNotNull();
+        assertThat(updated.getStatus()).isEqualTo(BorrowingStatus.RETURNED);
+    }
 }
