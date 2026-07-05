@@ -2,6 +2,7 @@ package com.mehdymokhtari.libraryapi.service.validation;
 
 import org.springframework.stereotype.Service;
 
+import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BookRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.BookUpdateRequest;
@@ -43,7 +44,7 @@ public class BookValidationService {
 
   public void validateBookNotBorrowed(Long id) {
     if (bookRepository.isBookWithStatus(id, BookStatus.BORROWED)) {
-      throw new BusinessException("Cannot delete book that is currently borrowed");
+      throw new BookNotAvailableException("Cannot delete book that is currently borrowed");
     }
   }
 

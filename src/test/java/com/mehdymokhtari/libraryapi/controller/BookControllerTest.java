@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 
-import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
 import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.filter.BookFilter;
 import com.mehdymokhtari.libraryapi.model.dto.request.BookRequest;
@@ -209,7 +209,7 @@ class BookControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn409WhenDeletingBorrowedBook() throws Exception {
-    doThrow(new BusinessException("Cannot delete book that is currently borrowed"))
+    doThrow(new BookNotAvailableException("Cannot delete book that is currently borrowed"))
         .when(bookService)
         .deleteBook(1L);
 
