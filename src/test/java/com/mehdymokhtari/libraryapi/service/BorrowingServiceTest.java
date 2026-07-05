@@ -17,7 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.ItemNotBorrowedException;
 import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.ReturnRequest;
@@ -117,7 +119,7 @@ class BorrowingServiceTest {
     when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
 
     assertThatThrownBy(() -> borrowingService.borrowItem(borrowRequest))
-        .isInstanceOf(BusinessException.class)
+        .isInstanceOf(BookNotAvailableException.class)
         .hasMessage("Item with ID 1 is not available for borrowing");
   }
 
@@ -162,7 +164,7 @@ class BorrowingServiceTest {
             null);
 
     when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
-    // CRITICAL: Mock the REPOSITORY, not the validator
+    // CRITICAL: Mock the REPOSITORY method that the service actually calls
     when(borrowingRecordRepository.findByItemIdAndStatus(1L, BorrowingStatus.BORROWED))
         .thenReturn(Optional.of(borrowingRecord));
     when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(returnedRecord);
@@ -185,7 +187,7 @@ class BorrowingServiceTest {
     when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
 
     assertThatThrownBy(() -> borrowingService.returnItem(returnRequest))
-        .isInstanceOf(BusinessException.class)
+        .isInstanceOf(ItemNotBorrowedException.class)
         .hasMessage("Item with ID 1 is not currently borrowed");
   }
 
