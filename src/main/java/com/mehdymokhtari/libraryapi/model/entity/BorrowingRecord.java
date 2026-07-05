@@ -30,8 +30,8 @@ public class BorrowingRecord {
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "book_id", nullable = false)
-  private Book book;
+  @JoinColumn(name = "item_id", nullable = false)
+  private LibraryItem item;
 
   @Column(name = "borrower_name", nullable = false, length = 100)
   private String borrowerName;

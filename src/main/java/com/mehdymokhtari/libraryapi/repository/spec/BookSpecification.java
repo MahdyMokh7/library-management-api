@@ -21,7 +21,7 @@ public class BookSpecification {
       List<Predicate> predicates = new ArrayList<>();
 
       // Always exclude deleted books
-      predicates.add(criteriaBuilder.isFalse(root.get("isDeleted")));
+      predicates.add(criteriaBuilder.isFalse(root.get("deleted")));
 
       if (filter == null) {
         return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
@@ -93,6 +93,6 @@ public class BookSpecification {
   }
 
   public static Specification<Book> isNotDeleted() {
-    return (root, query, criteriaBuilder) -> criteriaBuilder.isFalse(root.get("isDeleted"));
+    return (root, query, criteriaBuilder) -> criteriaBuilder.isFalse(root.get("deleted"));
   }
 }

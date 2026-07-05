@@ -24,20 +24,20 @@ public class BookValidationService {
   }
 
   public void validateUpdateBook(Long id, BookUpdateRequest request) {
-    if (!bookRepository.existsByIdAndIsDeletedFalse(id)) {
+    if (!bookRepository.existsByIdAndDeletedFalse(id)) {
       throw new BusinessException("Book with ID " + id + " does not exist");
     }
   }
 
   public void validateDeleteBook(Long id) {
-    if (!bookRepository.existsByIdAndIsDeletedFalse(id)) {
+    if (!bookRepository.existsByIdAndDeletedFalse(id)) {
       throw new BusinessException("Book with ID " + id + " does not exist");
     }
   }
 
   public Book validateAndGetBook(Long id) {
     return bookRepository
-        .findByIdAndIsDeletedFalse(id)
+        .findByIdAndDeletedFalse(id)
         .orElseThrow(() -> new BusinessException("Book with ID " + id + " does not exist"));
   }
 

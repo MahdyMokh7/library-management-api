@@ -15,7 +15,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @Entity
 @DiscriminatorValue("BOOK")
-public class Book extends LibraryItem {
+public class Book extends PhysicalItem {
 
   @Column(nullable = false)
   private String author;
@@ -23,22 +23,31 @@ public class Book extends LibraryItem {
   @Column(unique = true, nullable = false, length = 17)
   private String isbn;
 
+  @Column(nullable = false)
+  private Integer edition;
+
+  private String publisher;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
   private BookStatus status;
 
+  @Override
   public void borrow() {
     this.status = BookStatus.BORROWED;
   }
 
-  public void returnBook() {
+  @Override
+  public void returnItem() {
     this.status = BookStatus.AVAILABLE;
   }
 
+  @Override
   public boolean isAvailable() {
     return this.status == BookStatus.AVAILABLE && !this.isDeleted();
   }
 
+  @Override
   public boolean isBorrowed() {
     return this.status == BookStatus.BORROWED && !this.isDeleted();
   }

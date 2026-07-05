@@ -8,11 +8,11 @@ import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
 
 public interface BorrowingService {
 
-  BorrowingRecordResponse borrowBook(BorrowRequest request);
+  BorrowingRecordResponse borrowItem(BorrowRequest request);
 
-  BorrowingRecordResponse returnBook(ReturnRequest request);
+  BorrowingRecordResponse returnItem(ReturnRequest request);
 
-  List<BorrowingRecordResponse> getBorrowingHistoryByBook(Long bookId);
+  List<BorrowingRecordResponse> getBorrowingHistoryByItem(Long itemId);
 
   List<BorrowingRecordResponse> getBorrowingHistoryByBorrower(String borrowerName);
 }

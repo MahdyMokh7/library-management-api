@@ -7,8 +7,8 @@ import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 
 public record BorrowingRecordResponse(
     Long id,
-    Long bookId,
-    String bookTitle,
+    Long itemId,
+    String itemTitle,
     String borrowerName,
     LocalDate borrowedDate,
     LocalDate returnDate,

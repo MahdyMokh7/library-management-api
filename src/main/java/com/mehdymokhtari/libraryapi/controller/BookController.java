@@ -16,6 +16,7 @@ import com.mehdymokhtari.libraryapi.model.dto.request.BookUpdateRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.ApiResponse;
 import com.mehdymokhtari.libraryapi.model.dto.response.BookResponse;
 import com.mehdymokhtari.libraryapi.model.dto.response.PagedResponse;
+import com.mehdymokhtari.libraryapi.model.enums.BookStatus;
 import com.mehdymokhtari.libraryapi.service.BookService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -65,16 +66,21 @@ public class BookController {
           String status,
       @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
+    BookStatus bookStatus = null;
+    if (status != null) {
+      try {
+        bookStatus = BookStatus.valueOf(status.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        // Invalid status value, will be ignored
+      }
+    }
+
     BookFilter filter =
         BookFilter.builder()
             .title(title)
             .author(author)
             .publicationYear(year)
-            .status(
-                status != null
-                    ? com.mehdymokhtari.libraryapi.model.enums.BookStatus.valueOf(
-                        status.toUpperCase())
-                    : null)
+            .status(bookStatus)
             .build();
 
     PagedResponse<BookResponse> response = bookService.getAllBooks(filter, pageable);

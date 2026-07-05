@@ -9,13 +9,7 @@ import com.mehdymokhtari.libraryapi.model.enums.BookStatus;
 @Service
 public class BookStatusValidator {
 
-  public void validateBookNotDeleted(Book book) {
-    if (book.isDeleted()) {
-      throw new BusinessException("Book with ID " + book.getId() + " has been deleted");
-    }
-  }
-
-  public void validateBookStatus(Book book, BookStatus expectedStatus) {
+  public void validateStatus(Book book, BookStatus expectedStatus) {
     if (book.getStatus() != expectedStatus) {
       throw new BusinessException(
           "Book with ID "
@@ -29,19 +23,15 @@ public class BookStatusValidator {
   }
 
   public void validateBookCanBeBorrowed(Book book) {
-    validateBookNotDeleted(book);
-    validateBookStatus(book, BookStatus.AVAILABLE);
+    if (!book.isAvailable()) {
+      throw new BusinessException(
+          "Book with ID " + book.getId() + " is not available for borrowing");
+    }
   }
 
   public void validateBookCanBeReturned(Book book) {
-    validateBookNotDeleted(book);
-    validateBookStatus(book, BookStatus.BORROWED);
-  }
-
-  public void validateBookCanBeDeleted(Book book) {
-    validateBookNotDeleted(book);
-    if (book.isBorrowed()) {
-      throw new BusinessException("Cannot delete book that is currently borrowed");
+    if (!book.isBorrowed()) {
+      throw new BusinessException("Book with ID " + book.getId() + " is not currently borrowed");
     }
   }
 }

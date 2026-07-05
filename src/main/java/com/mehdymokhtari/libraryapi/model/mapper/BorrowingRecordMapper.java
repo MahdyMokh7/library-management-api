@@ -8,8 +8,8 @@ import org.mapstruct.Mapping;
 
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
-import com.mehdymokhtari.libraryapi.model.entity.Book;
 import com.mehdymokhtari.libraryapi.model.entity.BorrowingRecord;
+import com.mehdymokhtari.libraryapi.model.entity.LibraryItem;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 
 @Mapper(
@@ -18,7 +18,7 @@ import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 public interface BorrowingRecordMapper {
 
   @Mapping(target = "id", ignore = true)
-  @Mapping(target = "book", source = "book")
+  @Mapping(target = "item", source = "item")
   @Mapping(target = "borrowerName", source = "request.borrowerName")
   @Mapping(target = "borrowedDate", expression = "java(LocalDate.now())")
   @Mapping(target = "returnDate", ignore = true)
@@ -26,10 +26,10 @@ public interface BorrowingRecordMapper {
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "version", ignore = true)
-  BorrowingRecord toEntity(BorrowRequest request, Book book);
+  BorrowingRecord toEntity(BorrowRequest request, LibraryItem item);
 
-  @Mapping(target = "bookId", source = "book.id")
-  @Mapping(target = "bookTitle", source = "book.title")
+  @Mapping(target = "itemId", source = "item.id")
+  @Mapping(target = "itemTitle", source = "item.title")
   @Mapping(target = "borrowerName", source = "borrowerName")
   @Mapping(target = "borrowedDate", source = "borrowedDate")
   @Mapping(target = "returnDate", source = "returnDate")

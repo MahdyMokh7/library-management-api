@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Tag(
     name = "Borrowing Management",
-    description = "Endpoints for managing book borrowing and returns")
+    description = "Endpoints for managing item borrowing and returns")
 public class BorrowingController {
 
   private final BorrowingService borrowingService;
@@ -47,9 +47,9 @@ public class BorrowingController {
             responseCode = "409",
             description = "Book is not available")
       })
-  public ResponseEntity<ApiResponse<BorrowingRecordResponse>> borrowBook(
+  public ResponseEntity<ApiResponse<BorrowingRecordResponse>> borrowItem(
       @Valid @RequestBody BorrowRequest request) {
-    BorrowingRecordResponse response = borrowingService.borrowBook(request);
+    BorrowingRecordResponse response = borrowingService.borrowItem(request);
     return ResponseEntity.ok(ApiResponse.success("Book borrowed successfully", response));
   }
 
@@ -67,9 +67,9 @@ public class BorrowingController {
             responseCode = "409",
             description = "Book is not currently borrowed")
       })
-  public ResponseEntity<ApiResponse<BorrowingRecordResponse>> returnBook(
+  public ResponseEntity<ApiResponse<BorrowingRecordResponse>> returnItem(
       @Valid @RequestBody ReturnRequest request) {
-    BorrowingRecordResponse response = borrowingService.returnBook(request);
+    BorrowingRecordResponse response = borrowingService.returnItem(request);
     return ResponseEntity.ok(ApiResponse.success("Book returned successfully", response));
   }
 
@@ -86,7 +86,7 @@ public class BorrowingController {
       })
   public ResponseEntity<ApiResponse<List<BorrowingRecordResponse>>> getBorrowingHistoryByBook(
       @PathVariable Long bookId) {
-    List<BorrowingRecordResponse> response = borrowingService.getBorrowingHistoryByBook(bookId);
+    List<BorrowingRecordResponse> response = borrowingService.getBorrowingHistoryByItem(bookId);
     return ResponseEntity.ok(
         ApiResponse.success("Borrowing history retrieved successfully", response));
   }

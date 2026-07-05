@@ -5,17 +5,18 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.ReturnRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
-import com.mehdymokhtari.libraryapi.model.entity.Book;
 import com.mehdymokhtari.libraryapi.model.entity.BorrowingRecord;
+import com.mehdymokhtari.libraryapi.model.entity.LibraryItem;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 import com.mehdymokhtari.libraryapi.model.mapper.BorrowingRecordMapper;
-import com.mehdymokhtari.libraryapi.repository.BookRepository;
 import com.mehdymokhtari.libraryapi.repository.BorrowingRecordRepository;
+import com.mehdymokhtari.libraryapi.repository.LibraryItemRepository;
 import com.mehdymokhtari.libraryapi.service.BorrowingService;
-import com.mehdymokhtari.libraryapi.service.validation.BookValidationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,79 +28,85 @@ import lombok.extern.slf4j.Slf4j;
 public class BorrowingServiceImpl implements BorrowingService {
 
   private final BorrowingRecordRepository borrowingRecordRepository;
-  private final BookRepository bookRepository;
+  private final LibraryItemRepository libraryItemRepository;
   private final BorrowingRecordMapper borrowingRecordMapper;
-  private final BookValidationService bookValidationService;
 
   @Override
   @Transactional
-  public BorrowingRecordResponse borrowBook(BorrowRequest request) {
+  public BorrowingRecordResponse borrowItem(BorrowRequest request) {
     log.debug(
-        "Processing borrow request for book ID: {}, borrower: {}",
-        request.bookId(),
+        "Processing borrow request for item ID: {}, borrower: {}",
+        request.itemId(),
         request.borrowerName());
 
-    Book book = bookValidationService.validateAndGetBook(request.bookId());
+    LibraryItem item =
+        libraryItemRepository
+            .findByIdAndDeletedFalse(request.itemId())
+            .orElseThrow(() -> new ResourceNotFoundException("LibraryItem", request.itemId()));
 
-    if (!book.isAvailable()) {
+    if (!item.isAvailable()) {
       throw new BusinessException(
-          "Book with ID " + request.bookId() + " is not available for borrowing");
+          "Item with ID " + request.itemId() + " is not available for borrowing");
     }
 
-    BorrowingRecord record = borrowingRecordMapper.toEntity(request, book);
-    book.borrow();
-    bookRepository.save(book);
+    item.borrow();
+    libraryItemRepository.save(item);
+
+    BorrowingRecord record = borrowingRecordMapper.toEntity(request, item);
     BorrowingRecord saved = borrowingRecordRepository.save(record);
 
     log.info(
-        "Book borrowed successfully. Book ID: {}, Borrower: {}",
-        request.bookId(),
+        "Item borrowed successfully. Item ID: {}, Borrower: {}",
+        request.itemId(),
         request.borrowerName());
     return borrowingRecordMapper.toResponse(saved);
   }
 
   @Override
   @Transactional
-  public BorrowingRecordResponse returnBook(ReturnRequest request) {
-    log.debug("Processing return request for book ID: {}", request.bookId());
+  public BorrowingRecordResponse returnItem(ReturnRequest request) {
+    log.debug("Processing return request for item ID: {}", request.itemId());
 
-    Book book = bookValidationService.validateAndGetBook(request.bookId());
+    LibraryItem item =
+        libraryItemRepository
+            .findByIdAndDeletedFalse(request.itemId())
+            .orElseThrow(() -> new ResourceNotFoundException("LibraryItem", request.itemId()));
 
-    if (!book.isBorrowed()) {
+    if (!item.isBorrowed()) {
       throw new BusinessException(
-          "Book with ID " + request.bookId() + " is not currently borrowed");
+          "Item with ID " + request.itemId() + " is not currently borrowed");
     }
 
     BorrowingRecord record =
         borrowingRecordRepository
-            .findByBookIdAndStatus(request.bookId(), BorrowingStatus.BORROWED)
+            .findByItemIdAndStatus(request.itemId(), BorrowingStatus.BORROWED)
             .orElseThrow(
                 () ->
                     new BusinessException(
-                        "No active borrowing record found for book ID: " + request.bookId()));
+                        "No active borrowing record found for item ID: " + request.itemId()));
 
     record.markReturned();
-    book.returnBook();
-    bookRepository.save(book);
+    item.returnItem();
+    libraryItemRepository.save(item);
     BorrowingRecord saved = borrowingRecordRepository.save(record);
 
     log.info(
-        "Book returned successfully. Book ID: {}, Borrower: {}",
-        request.bookId(),
+        "Item returned successfully. Item ID: {}, Borrower: {}",
+        request.itemId(),
         record.getBorrowerName());
     return borrowingRecordMapper.toResponse(saved);
   }
 
   @Override
-  public List<BorrowingRecordResponse> getBorrowingHistoryByBook(Long bookId) {
-    log.debug("Fetching borrowing history for book ID: {}", bookId);
+  public List<BorrowingRecordResponse> getBorrowingHistoryByItem(Long itemId) {
+    log.debug("Fetching borrowing history for item ID: {}", itemId);
 
-    if (!bookRepository.existsByIdAndIsDeletedFalse(bookId)) {
-      throw new BusinessException("Book with ID " + bookId + " does not exist");
+    if (!libraryItemRepository.existsByIdAndDeletedFalse(itemId)) {
+      throw new ResourceNotFoundException("LibraryItem", itemId);
     }
 
     List<BorrowingRecord> records =
-        borrowingRecordRepository.findAllByBookIdOrderByBorrowedDateDesc(bookId);
+        borrowingRecordRepository.findAllByItemIdOrderByBorrowedDateDesc(itemId);
     return borrowingRecordMapper.toResponseList(records);
   }
 

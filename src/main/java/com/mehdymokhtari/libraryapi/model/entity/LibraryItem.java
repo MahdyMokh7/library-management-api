@@ -36,7 +36,7 @@ public abstract class LibraryItem {
   private Integer publicationYear;
 
   @Column(nullable = false)
-  private boolean isDeleted;
+  private boolean deleted;
 
   @Enumerated(EnumType.STRING)
   @Column(name = "item_type", insertable = false, updatable = false)
@@ -49,4 +49,47 @@ public abstract class LibraryItem {
   @LastModifiedDate private LocalDateTime updatedAt;
 
   @Version private Long version;
+
+  // ============================================================
+  // ABSTRACT BUSINESS METHODS - Each subclass implements its own
+  // ============================================================
+
+  /**
+   * Marks this item as borrowed. Physical items: status → BORROWED Digital items: can either be
+   * "borrowed" via license or remain always available. For simplicity, all items implement this.
+   */
+  public abstract void borrow();
+
+  /**
+   * Marks this item as returned. Physical items: status → AVAILABLE Digital items: may or may not
+   * need this.
+   */
+  public abstract void returnItem();
+
+  /**
+   * Checks if this item is available. Physical items: checks status and deleted flag. Digital
+   * items: always available (true) unless deleted.
+   */
+  public abstract boolean isAvailable();
+
+  /**
+   * Checks if this item is borrowed. Physical items: checks status. Digital items: always false
+   * (unless license tracking is implemented).
+   */
+  public abstract boolean isBorrowed();
+
+  /** Common for all subclasses: soft delete */
+  public void delete() {
+    this.deleted = true;
+  }
+
+  /** Common for all subclasses: restore from soft delete */
+  public void restore() {
+    this.deleted = false;
+  }
+
+  /** Common for all subclasses: check if deleted */
+  public boolean isDeleted() {
+    return this.deleted;
+  }
 }

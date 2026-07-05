@@ -38,6 +38,10 @@ import lombok.Data;
  *
  * PagedResponse<BookResponse> books = bookService.getAllBooks(filter, pageable);
  * </pre>
+ *
+ * @see com.mehdymokhtari.libraryapi.repository.spec.BookSpecification
+ * @see com.mehdymokhtari.libraryapi.service.BookService#getAllBooks(BookFilter,
+ *     org.springframework.data.domain.Pageable)
  */
 @Data
 @Builder
