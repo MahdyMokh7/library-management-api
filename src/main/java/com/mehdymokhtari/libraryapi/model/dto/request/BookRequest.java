@@ -1,10 +1,6 @@
 package com.mehdymokhtari.libraryapi.model.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PastOrPresent;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 // Uses BEAN Validator (like @NotBlank, @Size, @NotNull, etc.)
 public record BookRequest(
@@ -21,5 +17,6 @@ public record BookRequest(
         @Size(max = 17, message = "ISBN must not exceed 17 characters")
         String isbn,
     @NotNull(message = "Publication year is required")
-        @PastOrPresent(message = "Publication year cannot be in the future")
+        @Min(value = 1450, message = "Publication year must be at least 1450")
+        @Max(value = 2100, message = "Publication year cannot exceed 2100")
         Integer publicationYear) {}

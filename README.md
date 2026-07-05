@@ -141,7 +141,7 @@ mvn spring-boot:run
 ## 🏗️ Project Structure
 
 ```
-library-management-system/
+library-management-api/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/mehdymokhtari/libraryapi/
@@ -155,28 +155,45 @@ library-management-system/
 │   │   │   ├── model/               # Entities & DTOs
 │   │   │   │   ├── entity/          # JPA entities
 │   │   │   │   ├── dto/             # Data Transfer Objects
+│   │   │   │   │   ├── request/     # Request DTOs
+│   │   │   │   │   └── response/    # Response DTOs
 │   │   │   │   ├── enums/           # Enumerations
 │   │   │   │   └── mapper/          # MapStruct mappers
 │   │   │   ├── exception/           # Global exception handling
-│   │   │   ├── validator/           # Custom validators
 │   │   │   ├── filter/              # Search filters
 │   │   │   └── util/                # Utility classes
 │   │   └── resources/
 │   │       ├── application.yml      # Main configuration
 │   │       ├── application-docker.yml # Docker-specific config
-│   │       ├── db/migration/        # Flyway migrations
+│   │       ├── db/
+│   │       │   └── migration/        # Flyway migrations
 │   │       └── static/              # Static resources
 │   └── test/
-│       ├── java/                    # Unit & integration tests
-│       └── resources/               # Test configurations
-├── .github/workflows/               # CI/CD pipelines
+│       ├── java/com/mehdymokhtari/libraryapi/
+│       │   ├── controller/          # Controller unit tests
+│       │   ├── service/             # Service unit tests
+│       │   ├── repository/          # Repository integration tests
+│       │   └── integration/         # End-to-end integration tests
+│       └── resources/
+│           └── application-test.yml # Test configuration
+├── docs/
+│   ├── Project Documentation.pdf    # Official project specification
+│   └── devGuideSetup/               # Developer setup guide files
+├── scripts/
+│   └── start.sh                     # Application start script
+├── .github/
+│   └── workflows/
+│       └── ci.yml                   # CI/CD pipeline
+├── .mvn/                            # Maven wrapper configuration
+│   └── wrapper/
+│       └── maven-wrapper.properties
+├── .idea/                           # IntelliJ IDEA configuration
 ├── Dockerfile                       # Docker image definition
 ├── docker-compose.yml               # Docker services orchestration
-├── docker-compose.prod.yml          # Production compose overrides
 ├── .dockerignore                    # Docker ignore file
 ├── pom.xml                          # Maven dependencies
 ├── LICENSE                          # License file
-└── README.md                        # This file
+└── README.md                        # Project documentation                 # This file
 ```
 
 ## 🔌 API Endpoints

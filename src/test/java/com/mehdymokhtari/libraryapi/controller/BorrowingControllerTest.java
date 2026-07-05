@@ -2,7 +2,8 @@ package com.mehdymokhtari.libraryapi.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -11,36 +12,17 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
+import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.ReturnRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
-import com.mehdymokhtari.libraryapi.service.BorrowingService;
 
-@WebMvcTest(
-    value = BorrowingController.class,
-    excludeAutoConfiguration = {
-      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class,
-      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
-      org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration.class
-    })
-@ActiveProfiles("test")
-class BorrowingControllerTest {
-
-  @Autowired private MockMvc mockMvc;
-
-  @Autowired private ObjectMapper objectMapper;
-
-  @MockBean private BorrowingService borrowingService;
+class BorrowingControllerTest extends BaseControllerTest {
 
   private BorrowRequest borrowRequest;
   private ReturnRequest returnRequest;
@@ -79,14 +61,15 @@ class BorrowingControllerTest {
 
   @Test
   void shouldBorrowItemAndReturn200() throws Exception {
-    // Test: POST /api/v1/borrowings/borrow returns 200 OK with borrowing record
+    // Arrange
     when(borrowingService.borrowItem(any(BorrowRequest.class))).thenReturn(borrowingResponse);
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(borrowRequest)))
+                .content(asJsonString(borrowRequest)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.message").value("Book borrowed successfully"))
@@ -99,61 +82,61 @@ class BorrowingControllerTest {
 
   @Test
   void shouldReturn400WhenBorrowRequestHasInvalidData() throws Exception {
-    // Test: POST /api/v1/borrowings/borrow with invalid data returns 400 Bad Request
+    // Arrange
     BorrowRequest invalidRequest = new BorrowRequest(null, "");
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .content(asJsonString(invalidRequest)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void shouldReturn404WhenBorrowingNonExistingItem() throws Exception {
-    // Test: POST /api/v1/borrowings/borrow for non-existing item returns 404 Not Found
+    // Arrange
     BorrowRequest invalidRequest = new BorrowRequest(999L, "John Doe");
 
     when(borrowingService.borrowItem(any(BorrowRequest.class)))
-        .thenThrow(
-            new com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException(
-                "LibraryItem", 999L));
+        .thenThrow(new ResourceNotFoundException("LibraryItem", 999L));
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .content(asJsonString(invalidRequest)))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void shouldReturn409WhenBorrowingUnavailableItem() throws Exception {
-    // Test: POST /api/v1/borrowings/borrow for unavailable item returns 409 Conflict
+    // Arrange
     when(borrowingService.borrowItem(any(BorrowRequest.class)))
-        .thenThrow(
-            new com.mehdymokhtari.libraryapi.exception.BookNotAvailableException(
-                "Item with ID 1 is not available for borrowing"));
+        .thenThrow(new BookNotAvailableException("Item with ID 1 is not available for borrowing"));
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(borrowRequest)))
+                .content(asJsonString(borrowRequest)))
         .andExpect(status().isConflict());
   }
 
   @Test
   void shouldReturnItemAndReturn200() throws Exception {
-    // Test: POST /api/v1/borrowings/return returns 200 OK with returned record
+    // Arrange
     when(borrowingService.returnItem(any(ReturnRequest.class))).thenReturn(returnedResponse);
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(returnRequest)))
+                .content(asJsonString(returnRequest)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.message").value("Book returned successfully"))
@@ -166,58 +149,58 @@ class BorrowingControllerTest {
 
   @Test
   void shouldReturn400WhenReturnRequestHasInvalidData() throws Exception {
-    // Test: POST /api/v1/borrowings/return with invalid data returns 400 Bad Request
+    // Arrange
     ReturnRequest invalidRequest = new ReturnRequest(null);
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .content(asJsonString(invalidRequest)))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void shouldReturn404WhenReturningNonExistingItem() throws Exception {
-    // Test: POST /api/v1/borrowings/return for non-existing item returns 404 Not Found
+    // Arrange
     ReturnRequest invalidRequest = new ReturnRequest(999L);
 
     when(borrowingService.returnItem(any(ReturnRequest.class)))
-        .thenThrow(
-            new com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException(
-                "LibraryItem", 999L));
+        .thenThrow(new ResourceNotFoundException("LibraryItem", 999L));
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(invalidRequest)))
+                .content(asJsonString(invalidRequest)))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void shouldReturn409WhenReturningNotBorrowedItem() throws Exception {
-    // Test: POST /api/v1/borrowings/return for not borrowed item returns 409 Conflict
+    // Arrange
     when(borrowingService.returnItem(any(ReturnRequest.class)))
-        .thenThrow(
-            new com.mehdymokhtari.libraryapi.exception.BusinessException(
-                "Item with ID 1 is not currently borrowed"));
+        .thenThrow(new BusinessException("Item with ID 1 is not currently borrowed"));
 
+    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(returnRequest)))
+                .content(asJsonString(returnRequest)))
         .andExpect(status().isConflict());
   }
 
   @Test
   void shouldGetBorrowingHistoryByItemAndReturn200() throws Exception {
-    // Test: GET /api/v1/borrowings/book/{bookId} returns 200 OK with history
+    // Arrange
     List<BorrowingRecordResponse> history = List.of(borrowingResponse, returnedResponse);
 
     when(borrowingService.getBorrowingHistoryByItem(1L)).thenReturn(history);
 
+    // Act & Assert
     mockMvc
         .perform(get("/api/v1/borrowings/book/1"))
         .andExpect(status().isOk())
@@ -232,22 +215,22 @@ class BorrowingControllerTest {
 
   @Test
   void shouldReturn404WhenGettingHistoryForNonExistingItem() throws Exception {
-    // Test: GET /api/v1/borrowings/book/{bookId} for non-existing item returns 404 Not Found
+    // Arrange
     when(borrowingService.getBorrowingHistoryByItem(999L))
-        .thenThrow(
-            new com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException(
-                "LibraryItem", 999L));
+        .thenThrow(new ResourceNotFoundException("LibraryItem", 999L));
 
+    // Act & Assert
     mockMvc.perform(get("/api/v1/borrowings/book/999")).andExpect(status().isNotFound());
   }
 
   @Test
   void shouldGetBorrowingHistoryByBorrowerAndReturn200() throws Exception {
-    // Test: GET /api/v1/borrowings/borrower/{name} returns 200 OK with history
+    // Arrange
     List<BorrowingRecordResponse> history = List.of(borrowingResponse, returnedResponse);
 
     when(borrowingService.getBorrowingHistoryByBorrower("John")).thenReturn(history);
 
+    // Act & Assert
     mockMvc
         .perform(get("/api/v1/borrowings/borrower/John"))
         .andExpect(status().isOk())
@@ -260,9 +243,10 @@ class BorrowingControllerTest {
 
   @Test
   void shouldReturnEmptyListWhenBorrowerHasNoHistory() throws Exception {
-    // Test: GET /api/v1/borrowings/borrower/{name} for borrower with no history returns empty list
+    // Arrange
     when(borrowingService.getBorrowingHistoryByBorrower("Unknown")).thenReturn(List.of());
 
+    // Act & Assert
     mockMvc
         .perform(get("/api/v1/borrowings/borrower/Unknown"))
         .andExpect(status().isOk())
