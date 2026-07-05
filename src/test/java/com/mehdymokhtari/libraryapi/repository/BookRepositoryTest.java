@@ -39,6 +39,8 @@ class BookRepositoryTest {
             .publicationYear(2008)
             .status(BookStatus.AVAILABLE)
             .deleted(false)
+            .edition(1)
+            .publisher("Prentice Hall")
             .build();
 
     book2 =
@@ -49,6 +51,8 @@ class BookRepositoryTest {
             .publicationYear(2018)
             .status(BookStatus.AVAILABLE)
             .deleted(false)
+            .edition(3)
+            .publisher("Addison-Wesley")
             .build();
 
     book3 =
@@ -59,6 +63,8 @@ class BookRepositoryTest {
             .publicationYear(2018)
             .status(BookStatus.BORROWED)
             .deleted(false)
+            .edition(6)
+            .publisher("Manning")
             .build();
 
     bookRepository.saveAll(List.of(book1, book2, book3));
@@ -75,6 +81,7 @@ class BookRepositoryTest {
             .publicationYear(2020)
             .status(BookStatus.AVAILABLE)
             .deleted(false)
+            .edition(4)
             .build();
 
     Book saved = bookRepository.save(newBook);

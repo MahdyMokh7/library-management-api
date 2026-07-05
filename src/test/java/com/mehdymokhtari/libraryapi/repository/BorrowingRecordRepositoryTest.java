@@ -41,6 +41,8 @@ class BorrowingRecordRepositoryTest {
             .publicationYear(2008)
             .status(BookStatus.BORROWED)
             .deleted(false)
+            .edition(1)
+            .publisher("Prentice Hall")
             .build();
 
     book2 =
@@ -51,6 +53,8 @@ class BorrowingRecordRepositoryTest {
             .publicationYear(2018)
             .status(BookStatus.AVAILABLE)
             .deleted(false)
+            .edition(4)
+            .publisher("Addison-Wesley")
             .build();
 
     bookRepository.saveAll(List.of(book1, book2));
@@ -147,6 +151,8 @@ class BorrowingRecordRepositoryTest {
             .publicationYear(2020)
             .status(BookStatus.AVAILABLE)
             .deleted(false)
+            .edition(1)
+            .publisher("Test Publisher")
             .build();
 
     bookRepository.save(newBook);
@@ -257,6 +263,8 @@ class BorrowingRecordRepositoryTest {
             .publicationYear(2018)
             .status(BookStatus.AVAILABLE)
             .deleted(false)
+            .edition(6)
+            .publisher("Manning")
             .build();
 
     bookRepository.save(newBook);
