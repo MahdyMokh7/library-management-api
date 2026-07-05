@@ -7,15 +7,12 @@ import jakarta.validation.constraints.Size;
 
 // Uses BEAN Validator (like @NotBlank, @Size, @NotNull, etc.)
 public record BookUpdateRequest(
-        @NotBlank(message = "Title is required")
+    @NotBlank(message = "Title is required")
         @Size(max = 255, message = "Title must not exceed 255 characters")
         String title,
-
-        @NotBlank(message = "Author is required")
+    @NotBlank(message = "Author is required")
         @Size(max = 255, message = "Author name must not exceed 255 characters")
         String author,
-
-        @NotNull(message = "Publication year is required")
+    @NotNull(message = "Publication year is required")
         @PastOrPresent(message = "Publication year cannot be in the future")
-        Integer publicationYear
-) {}
+        Integer publicationYear) {}

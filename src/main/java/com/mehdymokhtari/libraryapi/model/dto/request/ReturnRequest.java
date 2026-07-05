@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Positive;
 
 // Uses BEAN Validator (like @Positive, @NotNull, etc.)
 public record ReturnRequest(
-        @NotNull(message = "Book ID is required")
+    @NotNull(message = "Book ID is required")
         @Positive(message = "Book ID must be a positive number")
-        Long bookId
-) {}
+        Long bookId) {}
