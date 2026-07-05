@@ -29,6 +29,7 @@ import com.mehdymokhtari.libraryapi.model.dto.response.BookResponse;
 import com.mehdymokhtari.libraryapi.repository.BookRepository;
 import com.mehdymokhtari.libraryapi.repository.BorrowingRecordRepository;
 
+// end-to-end test (SpringBootTest)
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers

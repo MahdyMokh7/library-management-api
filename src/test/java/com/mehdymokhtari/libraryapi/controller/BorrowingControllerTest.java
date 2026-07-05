@@ -26,8 +26,14 @@ import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 import com.mehdymokhtari.libraryapi.service.BorrowingService;
 
-@WebMvcTest(BorrowingController.class)
-@ActiveProfiles("test") // this will use the application-test.yml file
+@WebMvcTest(
+    value = BorrowingController.class,
+    excludeAutoConfiguration = {
+      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class,
+      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
+      org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration.class
+    })
+@ActiveProfiles("test")
 class BorrowingControllerTest {
 
   @Autowired private MockMvc mockMvc;

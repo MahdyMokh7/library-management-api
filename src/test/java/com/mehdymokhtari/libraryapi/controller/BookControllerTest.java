@@ -29,8 +29,14 @@ import com.mehdymokhtari.libraryapi.model.dto.response.PagedResponse;
 import com.mehdymokhtari.libraryapi.model.enums.BookStatus;
 import com.mehdymokhtari.libraryapi.service.BookService;
 
-@WebMvcTest(BookController.class)
-@ActiveProfiles("test") // this will use the application-test.yml file
+@WebMvcTest(
+    value = BookController.class,
+    excludeAutoConfiguration = {
+      org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration.class,
+      org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration.class,
+      org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration.class
+    })
+@ActiveProfiles("test")
 class BookControllerTest {
 
   @Autowired private MockMvc mockMvc;
