@@ -29,7 +29,7 @@ import com.mehdymokhtari.libraryapi.model.dto.response.BookResponse;
 import com.mehdymokhtari.libraryapi.repository.BookRepository;
 import com.mehdymokhtari.libraryapi.repository.BorrowingRecordRepository;
 
-// end-to-end test (SpringBootTest)
+// end-to-end test (SpringBootTest - we used the Flyway too to init the DB schema)
 @SpringBootTest
 @AutoConfigureMockMvc
 @Testcontainers
