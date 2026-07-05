@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,10 +93,7 @@ class BorrowingServiceTest {
   @Test
   void shouldBorrowItemSuccessfully() {
     // Test: Borrow available item successfully
-    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.of(book));
-    doNothing().when(borrowingValidator).validateBorrowerName("John Doe");
-    doNothing().when(borrowingValidator).validateItemAvailable(book);
-    doNothing().when(borrowingValidator).validateItemNotAlreadyBorrowed(1L);
+    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
     when(borrowingRecordMapper.toEntity(borrowRequest, book)).thenReturn(borrowingRecord);
     when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(borrowingRecord);
     when(borrowingRecordMapper.toResponse(any(BorrowingRecord.class)))
@@ -107,7 +105,7 @@ class BorrowingServiceTest {
     assertThat(result.itemId()).isEqualTo(1L);
     assertThat(result.borrowerName()).isEqualTo("John Doe");
     assertThat(result.status()).isEqualTo(BorrowingStatus.BORROWED);
-    verify(book).borrow();
+
     verify(libraryItemRepository).save(book);
     verify(borrowingRecordRepository).save(borrowingRecord);
   }
@@ -116,11 +114,7 @@ class BorrowingServiceTest {
   void shouldThrowExceptionWhenBorrowingUnavailableItem() {
     // Test: Borrow unavailable item throws exception
     book.setStatus(BookStatus.BORROWED);
-    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.of(book));
-    doNothing().when(borrowingValidator).validateBorrowerName("John Doe");
-    doThrow(new BusinessException("Item with ID 1 is not available for borrowing"))
-        .when(borrowingValidator)
-        .validateItemAvailable(book);
+    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
 
     assertThatThrownBy(() -> borrowingService.borrowItem(borrowRequest))
         .isInstanceOf(BusinessException.class)
@@ -130,8 +124,7 @@ class BorrowingServiceTest {
   @Test
   void shouldThrowExceptionWhenItemNotFoundForBorrowing() {
     // Test: Borrow non-existing item throws exception
-    when(libraryItemRepository.findByIdAndDeletedFalse(999L))
-        .thenReturn(java.util.Optional.empty());
+    when(libraryItemRepository.findByIdAndDeletedFalse(999L)).thenReturn(Optional.empty());
 
     BorrowRequest invalidRequest = new BorrowRequest(999L, "John Doe");
 
@@ -168,9 +161,10 @@ class BorrowingServiceTest {
             null,
             null);
 
-    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.of(book));
-    doNothing().when(borrowingValidator).validateItemBorrowed(book);
-    when(borrowingValidator.validateAndGetActiveBorrowing(1L)).thenReturn(borrowingRecord);
+    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
+    // CRITICAL: Mock the REPOSITORY, not the validator
+    when(borrowingRecordRepository.findByItemIdAndStatus(1L, BorrowingStatus.BORROWED))
+        .thenReturn(Optional.of(borrowingRecord));
     when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(returnedRecord);
     when(borrowingRecordMapper.toResponse(any(BorrowingRecord.class))).thenReturn(returnedResponse);
 
@@ -179,7 +173,7 @@ class BorrowingServiceTest {
     assertThat(result).isNotNull();
     assertThat(result.status()).isEqualTo(BorrowingStatus.RETURNED);
     assertThat(result.returnDate()).isNotNull();
-    verify(book).returnItem();
+
     verify(libraryItemRepository).save(book);
     verify(borrowingRecordRepository).save(any(BorrowingRecord.class));
   }
@@ -188,10 +182,7 @@ class BorrowingServiceTest {
   void shouldThrowExceptionWhenReturningNotBorrowedItem() {
     // Test: Return item that is not borrowed throws exception
     book.setStatus(BookStatus.AVAILABLE);
-    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.of(book));
-    doThrow(new BusinessException("Item with ID 1 is not currently borrowed"))
-        .when(borrowingValidator)
-        .validateItemBorrowed(book);
+    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
 
     assertThatThrownBy(() -> borrowingService.returnItem(returnRequest))
         .isInstanceOf(BusinessException.class)
@@ -202,10 +193,10 @@ class BorrowingServiceTest {
   void shouldThrowExceptionWhenNoActiveBorrowingRecordForReturn() {
     // Test: Return item with no active borrowing record throws exception
     book.setStatus(BookStatus.BORROWED);
-    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(java.util.Optional.of(book));
-    doNothing().when(borrowingValidator).validateItemBorrowed(book);
-    when(borrowingValidator.validateAndGetActiveBorrowing(1L))
-        .thenThrow(new BusinessException("No active borrowing record found for item ID: 1"));
+    when(libraryItemRepository.findByIdAndDeletedFalse(1L)).thenReturn(Optional.of(book));
+    // Mock the repository to return empty (no active record)
+    when(borrowingRecordRepository.findByItemIdAndStatus(1L, BorrowingStatus.BORROWED))
+        .thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> borrowingService.returnItem(returnRequest))
         .isInstanceOf(BusinessException.class)

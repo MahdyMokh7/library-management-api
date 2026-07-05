@@ -134,7 +134,8 @@ class BookServiceTest {
   void shouldGetAllBooksWithFiltersAndPagination() {
     // Test: Get all books with filters and pagination
     Pageable pageable = PageRequest.of(0, 10);
-    Page<Book> bookPage = new PageImpl<>(List.of(book));
+    Page<Book> bookPage =
+        new PageImpl<>(List.of(book), pageable, 1); // ← Add pageable and total count
     BookFilter filter = BookFilter.builder().title("Clean").status(BookStatus.AVAILABLE).build();
 
     when(bookRepository.findAll(any(Specification.class), any(Pageable.class)))
@@ -147,7 +148,7 @@ class BookServiceTest {
     assertThat(result.content()).hasSize(1);
     assertThat(result.totalElements()).isEqualTo(1);
     assertThat(result.pageNumber()).isEqualTo(0);
-    assertThat(result.pageSize()).isEqualTo(10);
+    assertThat(result.pageSize()).isEqualTo(10); // ← Now this will pass
     assertThat(result.last()).isTrue();
   }
 
