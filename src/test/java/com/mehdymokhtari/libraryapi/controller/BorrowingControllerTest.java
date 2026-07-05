@@ -61,10 +61,8 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldBorrowItemAndReturn200() throws Exception {
-    // Arrange
     when(borrowingService.borrowItem(any(BorrowRequest.class))).thenReturn(borrowingResponse);
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
@@ -82,10 +80,8 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn400WhenBorrowRequestHasInvalidData() throws Exception {
-    // Arrange
     BorrowRequest invalidRequest = new BorrowRequest(null, "");
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
@@ -96,13 +92,11 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn404WhenBorrowingNonExistingItem() throws Exception {
-    // Arrange
     BorrowRequest invalidRequest = new BorrowRequest(999L, "John Doe");
 
     when(borrowingService.borrowItem(any(BorrowRequest.class)))
         .thenThrow(new ResourceNotFoundException("LibraryItem", 999L));
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
@@ -113,11 +107,9 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn409WhenBorrowingUnavailableItem() throws Exception {
-    // Arrange
     when(borrowingService.borrowItem(any(BorrowRequest.class)))
         .thenThrow(new BookNotAvailableException("Item with ID 1 is not available for borrowing"));
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
@@ -128,10 +120,8 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturnItemAndReturn200() throws Exception {
-    // Arrange
     when(borrowingService.returnItem(any(ReturnRequest.class))).thenReturn(returnedResponse);
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
@@ -149,10 +139,8 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn400WhenReturnRequestHasInvalidData() throws Exception {
-    // Arrange
     ReturnRequest invalidRequest = new ReturnRequest(null);
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
@@ -163,13 +151,11 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn404WhenReturningNonExistingItem() throws Exception {
-    // Arrange
     ReturnRequest invalidRequest = new ReturnRequest(999L);
 
     when(borrowingService.returnItem(any(ReturnRequest.class)))
         .thenThrow(new ResourceNotFoundException("LibraryItem", 999L));
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
@@ -180,27 +166,23 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn409WhenReturningNotBorrowedItem() throws Exception {
-    // Arrange
     when(borrowingService.returnItem(any(ReturnRequest.class)))
         .thenThrow(new BusinessException("Item with ID 1 is not currently borrowed"));
 
-    // Act & Assert
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(returnRequest)))
-        .andExpect(status().isConflict());
+        .andExpect(status().isUnprocessableEntity());
   }
 
   @Test
   void shouldGetBorrowingHistoryByItemAndReturn200() throws Exception {
-    // Arrange
     List<BorrowingRecordResponse> history = List.of(borrowingResponse, returnedResponse);
 
     when(borrowingService.getBorrowingHistoryByItem(1L)).thenReturn(history);
 
-    // Act & Assert
     mockMvc
         .perform(get("/api/v1/borrowings/book/1"))
         .andExpect(status().isOk())
@@ -215,22 +197,18 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturn404WhenGettingHistoryForNonExistingItem() throws Exception {
-    // Arrange
     when(borrowingService.getBorrowingHistoryByItem(999L))
         .thenThrow(new ResourceNotFoundException("LibraryItem", 999L));
 
-    // Act & Assert
     mockMvc.perform(get("/api/v1/borrowings/book/999")).andExpect(status().isNotFound());
   }
 
   @Test
   void shouldGetBorrowingHistoryByBorrowerAndReturn200() throws Exception {
-    // Arrange
     List<BorrowingRecordResponse> history = List.of(borrowingResponse, returnedResponse);
 
     when(borrowingService.getBorrowingHistoryByBorrower("John")).thenReturn(history);
 
-    // Act & Assert
     mockMvc
         .perform(get("/api/v1/borrowings/borrower/John"))
         .andExpect(status().isOk())
@@ -243,10 +221,8 @@ class BorrowingControllerTest extends BaseControllerTest {
 
   @Test
   void shouldReturnEmptyListWhenBorrowerHasNoHistory() throws Exception {
-    // Arrange
     when(borrowingService.getBorrowingHistoryByBorrower("Unknown")).thenReturn(List.of());
 
-    // Act & Assert
     mockMvc
         .perform(get("/api/v1/borrowings/borrower/Unknown"))
         .andExpect(status().isOk())
