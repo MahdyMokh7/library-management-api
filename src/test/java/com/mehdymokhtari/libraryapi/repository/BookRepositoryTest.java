@@ -36,7 +36,7 @@ class BookRepositoryTest {
             .isbn("9780132350884")
             .publicationYear(2008)
             .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
+            .deleted(false)
             .build();
 
     book2 =
@@ -46,7 +46,7 @@ class BookRepositoryTest {
             .isbn("9780134685991")
             .publicationYear(2018)
             .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
+            .deleted(false)
             .build();
 
     book3 =
@@ -56,7 +56,7 @@ class BookRepositoryTest {
             .isbn("9781617294945")
             .publicationYear(2018)
             .status(BookStatus.BORROWED)
-            .isDeleted(false)
+            .deleted(false)
             .build();
 
     bookRepository.saveAll(List.of(book1, book2, book3));
@@ -72,7 +72,7 @@ class BookRepositoryTest {
             .isbn("9781234567897")
             .publicationYear(2020)
             .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
+            .deleted(false)
             .build();
 
     Book saved = bookRepository.save(newBook);
@@ -88,7 +88,7 @@ class BookRepositoryTest {
   @Test
   void shouldFindBookByIdAndIsDeletedFalse() {
     // Test: Find existing book by ID that is not deleted
-    Optional<Book> found = bookRepository.findByIdAndIsDeletedFalse(book1.getId());
+    Optional<Book> found = bookRepository.findByIdAndDeletedFalse(book1.getId());
 
     assertThat(found).isPresent();
     assertThat(found.get().getTitle()).isEqualTo("Clean Code");
@@ -98,7 +98,7 @@ class BookRepositoryTest {
   @Test
   void shouldReturnEmptyWhenBookNotFoundOrDeleted() {
     // Test: Find non-existing book returns empty Optional
-    Optional<Book> found = bookRepository.findByIdAndIsDeletedFalse(999L);
+    Optional<Book> found = bookRepository.findByIdAndDeletedFalse(999L);
 
     assertThat(found).isEmpty();
   }
@@ -122,7 +122,7 @@ class BookRepositoryTest {
   @Test
   void shouldCheckIfBookExistsByIdAndNotDeleted() {
     // Test: Check if book exists by ID and is not deleted
-    boolean exists = bookRepository.existsByIdAndIsDeletedFalse(book1.getId());
+    boolean exists = bookRepository.existsByIdAndDeletedFalse(book1.getId());
 
     assertThat(exists).isTrue();
   }
@@ -133,7 +133,7 @@ class BookRepositoryTest {
     book1.setDeleted(true);
     bookRepository.save(book1);
 
-    boolean exists = bookRepository.existsByIdAndIsDeletedFalse(book1.getId());
+    boolean exists = bookRepository.existsByIdAndDeletedFalse(book1.getId());
 
     assertThat(exists).isFalse();
   }

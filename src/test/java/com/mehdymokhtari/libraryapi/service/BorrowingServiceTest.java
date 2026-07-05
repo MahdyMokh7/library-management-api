@@ -64,7 +64,7 @@ class BorrowingServiceTest {
             .isbn("9780132350884")
             .publicationYear(2008)
             .status(BookStatus.AVAILABLE)
-            .isDeleted(false)
+            .deleted(false)
             .build();
 
     borrowingRecord =
