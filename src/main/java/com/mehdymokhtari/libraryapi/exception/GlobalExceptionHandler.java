@@ -183,4 +183,17 @@ public class GlobalExceptionHandler {
             request.getDescription(false).replace("uri=", ""));
     return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(error);
   }
+
+  @ExceptionHandler(ItemNotBorrowedException.class)
+  public ResponseEntity<ErrorResponse> handleItemNotBorrowed(
+      ItemNotBorrowedException ex, WebRequest request) {
+    log.error("Item not borrowed: {}", ex.getMessage());
+    ErrorResponse error =
+        ErrorResponse.of(
+            CONFLICT.value(),
+            CONFLICT.getReasonPhrase(),
+            ex.getMessage(),
+            request.getDescription(false).replace("uri=", ""));
+    return ResponseEntity.status(CONFLICT).body(error);
+  }
 }

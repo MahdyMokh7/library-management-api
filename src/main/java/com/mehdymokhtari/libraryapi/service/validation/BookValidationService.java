@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BookRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.BookUpdateRequest;
 import com.mehdymokhtari.libraryapi.model.entity.Book;
@@ -26,20 +27,20 @@ public class BookValidationService {
 
   public void validateUpdateBook(Long id, BookUpdateRequest request) {
     if (!bookRepository.existsByIdAndDeletedFalse(id)) {
-      throw new BusinessException("Book with ID " + id + " does not exist");
+      throw new ResourceNotFoundException("Book", id);
     }
   }
 
   public void validateDeleteBook(Long id) {
     if (!bookRepository.existsByIdAndDeletedFalse(id)) {
-      throw new BusinessException("Book with ID " + id + " does not exist");
+      throw new ResourceNotFoundException("Book", id);
     }
   }
 
   public Book validateAndGetBook(Long id) {
     return bookRepository
         .findByIdAndDeletedFalse(id)
-        .orElseThrow(() -> new BusinessException("Book with ID " + id + " does not exist"));
+        .orElseThrow(() -> new ResourceNotFoundException("Book", id));
   }
 
   public void validateBookNotBorrowed(Long id) {

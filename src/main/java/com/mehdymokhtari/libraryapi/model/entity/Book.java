@@ -14,6 +14,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @SuperBuilder
 @Entity
+@Table(name = "books")
 @DiscriminatorValue("BOOK")
 public class Book extends PhysicalItem {
 

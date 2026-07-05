@@ -2,7 +2,9 @@ package com.mehdymokhtari.libraryapi.service.validation;
 
 import org.springframework.stereotype.Service;
 
+import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.InvalidOperationException;
 import com.mehdymokhtari.libraryapi.model.entity.BorrowingRecord;
 import com.mehdymokhtari.libraryapi.model.entity.LibraryItem;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
@@ -27,14 +29,15 @@ public class BorrowingValidator {
 
   public void validateItemAvailable(LibraryItem item) {
     if (!item.isAvailable()) {
-      throw new BusinessException(
+      throw new BookNotAvailableException(
           "Item with ID " + item.getId() + " is not available for borrowing");
     }
   }
 
   public void validateItemBorrowed(LibraryItem item) {
     if (!item.isBorrowed()) {
-      throw new BusinessException("Item with ID " + item.getId() + " is not currently borrowed");
+      throw new InvalidOperationException(
+          "Item with ID " + item.getId() + " is not currently borrowed");
     }
   }
 
@@ -47,7 +50,7 @@ public class BorrowingValidator {
 
   public void validateItemNotAlreadyBorrowed(Long itemId) {
     if (borrowingRecordRepository.isItemCurrentlyBorrowed(itemId)) {
-      throw new BusinessException("Item with ID " + itemId + " is already borrowed");
+      throw new BookNotAvailableException("Item with ID " + itemId + " is already borrowed");
     }
   }
 }

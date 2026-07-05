@@ -241,7 +241,8 @@ class LibraryManagementIntegrationTest {
 
   @Test
   void shouldGetBorrowingHistoryEndToEnd() throws Exception {
-    // Test: End-to-end - Create book, borrow it, return it, then get history
+    // Test: End-to-end - Create book, borrow it, return it, borrow again, return again, then get
+    // history
     MvcResult createResult =
         mockMvc
             .perform(
@@ -260,8 +261,10 @@ class LibraryManagementIntegrationTest {
                 .constructParametricType(ApiResponse.class, BookResponse.class));
     Long bookId = apiResponse.data().id();
 
-    // Borrow the book
     BorrowRequest borrowRequest = new BorrowRequest(bookId, "John Doe");
+    ReturnRequest returnRequest = new ReturnRequest(bookId);
+
+    // FIRST BORROW & RETURN
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
@@ -269,8 +272,6 @@ class LibraryManagementIntegrationTest {
                 .content(objectMapper.writeValueAsString(borrowRequest)))
         .andExpect(status().isOk());
 
-    // Return the book
-    ReturnRequest returnRequest = new ReturnRequest(bookId);
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
@@ -278,7 +279,22 @@ class LibraryManagementIntegrationTest {
                 .content(objectMapper.writeValueAsString(returnRequest)))
         .andExpect(status().isOk());
 
-    // Get borrowing history
+    // SECOND BORROW & RETURN
+    mockMvc
+        .perform(
+            post("/api/v1/borrowings/borrow")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(borrowRequest)))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/v1/borrowings/return")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(returnRequest)))
+        .andExpect(status().isOk());
+
+    // Get borrowing history - now should have 2 records
     mockMvc
         .perform(get("/api/v1/borrowings/book/{bookId}", bookId))
         .andExpect(status().isOk())
@@ -286,9 +302,7 @@ class LibraryManagementIntegrationTest {
         .andExpect(jsonPath("$.data").isArray())
         .andExpect(jsonPath("$.data.length()").value(2))
         .andExpect(jsonPath("$.data[0].status").value("RETURNED"))
-        .andExpect(jsonPath("$.data[0].borrowerName").value("John Doe"))
-        .andExpect(jsonPath("$.data[1].status").value("BORROWED"))
-        .andExpect(jsonPath("$.data[1].borrowerName").value("John Doe"));
+        .andExpect(jsonPath("$.data[1].status").value("RETURNED"));
   }
 
   @Test
@@ -352,7 +366,8 @@ class LibraryManagementIntegrationTest {
 
   @Test
   void shouldGetBorrowingHistoryByBorrowerNameEndToEnd() throws Exception {
-    // Test: End-to-end - Create book, borrow by borrower, then get history by borrower name
+    // Test: End-to-end - Create book, borrow by borrower, return, borrow again, return, then get
+    // history by borrower name
     MvcResult createResult =
         mockMvc
             .perform(
@@ -372,6 +387,9 @@ class LibraryManagementIntegrationTest {
     Long bookId = apiResponse.data().id();
 
     BorrowRequest borrowRequest = new BorrowRequest(bookId, "John Doe");
+    ReturnRequest returnRequest = new ReturnRequest(bookId);
+
+    // FIRST BORROW & RETURN
     mockMvc
         .perform(
             post("/api/v1/borrowings/borrow")
@@ -379,7 +397,6 @@ class LibraryManagementIntegrationTest {
                 .content(objectMapper.writeValueAsString(borrowRequest)))
         .andExpect(status().isOk());
 
-    ReturnRequest returnRequest = new ReturnRequest(bookId);
     mockMvc
         .perform(
             post("/api/v1/borrowings/return")
@@ -387,7 +404,22 @@ class LibraryManagementIntegrationTest {
                 .content(objectMapper.writeValueAsString(returnRequest)))
         .andExpect(status().isOk());
 
-    // Get history by borrower name
+    // SECOND BORROW & RETURN
+    mockMvc
+        .perform(
+            post("/api/v1/borrowings/borrow")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(borrowRequest)))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/v1/borrowings/return")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(returnRequest)))
+        .andExpect(status().isOk());
+
+    // Get history by borrower name - now should have 2 records
     mockMvc
         .perform(get("/api/v1/borrowings/borrower/{name}", "John"))
         .andExpect(status().isOk())
@@ -395,7 +427,8 @@ class LibraryManagementIntegrationTest {
         .andExpect(jsonPath("$.data").isArray())
         .andExpect(jsonPath("$.data.length()").value(2))
         .andExpect(jsonPath("$.data[0].borrowerName").value("John Doe"))
-        .andExpect(jsonPath("$.data[0].itemTitle").value("Clean Code"));
+        .andExpect(jsonPath("$.data[0].itemTitle").value("Clean Code"))
+        .andExpect(jsonPath("$.data[1].borrowerName").value("John Doe"));
   }
 
   @Test

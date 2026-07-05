@@ -95,7 +95,7 @@ public class BookServiceImpl implements BookService {
     validationService.validateBookNotBorrowed(id);
 
     Book book = validationService.validateAndGetBook(id);
-    book.setDeleted(true);
+    book.delete();
     bookRepository.save(book);
 
     log.info("Book soft-deleted with ID: {}", id);

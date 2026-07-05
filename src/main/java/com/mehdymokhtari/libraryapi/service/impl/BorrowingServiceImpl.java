@@ -5,8 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mehdymokhtari.libraryapi.exception.BusinessException;
-import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
+import com.mehdymokhtari.libraryapi.exception.*;
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.ReturnRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
@@ -45,7 +44,7 @@ public class BorrowingServiceImpl implements BorrowingService {
             .orElseThrow(() -> new ResourceNotFoundException("LibraryItem", request.itemId()));
 
     if (!item.isAvailable()) {
-      throw new BusinessException(
+      throw new BookNotAvailableException(
           "Item with ID " + request.itemId() + " is not available for borrowing");
     }
 
@@ -73,8 +72,7 @@ public class BorrowingServiceImpl implements BorrowingService {
             .orElseThrow(() -> new ResourceNotFoundException("LibraryItem", request.itemId()));
 
     if (!item.isBorrowed()) {
-      throw new BusinessException(
-          "Item with ID " + request.itemId() + " is not currently borrowed");
+      throw new ItemNotBorrowedException(request.itemId());
     }
 
     BorrowingRecord record =

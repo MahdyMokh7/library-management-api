@@ -22,6 +22,8 @@ logging:
     org.springframework.boot.test: WARN
     org.springframework.test.context: WARN
     org.springframework.web: WARN
+    org.springframework.web.servlet: WARN
+    org.springframework.test.web.servlet: WARN
     org.hibernate: WARN
     org.junit: WARN
     org.testcontainers: WARN

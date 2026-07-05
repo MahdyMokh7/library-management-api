@@ -3,6 +3,7 @@ package com.mehdymokhtari.libraryapi.service.validation;
 import org.springframework.stereotype.Service;
 
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.InvalidOperationException;
 import com.mehdymokhtari.libraryapi.model.entity.Book;
 import com.mehdymokhtari.libraryapi.model.enums.BookStatus;
 
@@ -31,7 +32,8 @@ public class BookStatusValidator {
 
   public void validateBookCanBeReturned(Book book) {
     if (!book.isBorrowed()) {
-      throw new BusinessException("Book with ID " + book.getId() + " is not currently borrowed");
+      throw new InvalidOperationException(
+          "Book with ID " + book.getId() + " is not currently borrowed");
     }
   }
 }
