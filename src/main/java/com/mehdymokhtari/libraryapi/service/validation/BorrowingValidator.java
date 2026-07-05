@@ -3,8 +3,8 @@ package com.mehdymokhtari.libraryapi.service.validation;
 import org.springframework.stereotype.Service;
 
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
-import com.mehdymokhtari.libraryapi.model.entity.Book;
 import com.mehdymokhtari.libraryapi.model.entity.BorrowingRecord;
+import com.mehdymokhtari.libraryapi.model.entity.LibraryItem;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 import com.mehdymokhtari.libraryapi.repository.BorrowingRecordRepository;
 
@@ -25,29 +25,29 @@ public class BorrowingValidator {
     }
   }
 
-  public void validateBookAvailable(Book book) {
-    if (!book.isAvailable()) {
+  public void validateItemAvailable(LibraryItem item) {
+    if (!item.isAvailable()) {
       throw new BusinessException(
-          "Book with ID " + book.getId() + " is not available for borrowing");
+          "Item with ID " + item.getId() + " is not available for borrowing");
     }
   }
 
-  public void validateBookBorrowed(Book book) {
-    if (!book.isBorrowed()) {
-      throw new BusinessException("Book with ID " + book.getId() + " is not currently borrowed");
+  public void validateItemBorrowed(LibraryItem item) {
+    if (!item.isBorrowed()) {
+      throw new BusinessException("Item with ID " + item.getId() + " is not currently borrowed");
     }
   }
 
-  public BorrowingRecord validateAndGetActiveBorrowing(Long bookId) {
+  public BorrowingRecord validateAndGetActiveBorrowing(Long itemId) {
     return borrowingRecordRepository
-        .findByBookIdAndStatus(bookId, BorrowingStatus.BORROWED)
+        .findByItemIdAndStatus(itemId, BorrowingStatus.BORROWED)
         .orElseThrow(
-            () -> new BusinessException("No active borrowing record found for book ID: " + bookId));
+            () -> new BusinessException("No active borrowing record found for item ID: " + itemId));
   }
 
-  public void validateBookNotAlreadyBorrowed(Long bookId) {
-    if (borrowingRecordRepository.isBookCurrentlyBorrowed(bookId)) {
-      throw new BusinessException("Book with ID " + bookId + " is already borrowed");
+  public void validateItemNotAlreadyBorrowed(Long itemId) {
+    if (borrowingRecordRepository.isItemCurrentlyBorrowed(itemId)) {
+      throw new BusinessException("Item with ID " + itemId + " is already borrowed");
     }
   }
 }
