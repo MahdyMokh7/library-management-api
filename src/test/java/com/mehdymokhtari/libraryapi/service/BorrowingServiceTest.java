@@ -16,262 +16,259 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.ReturnRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
 import com.mehdymokhtari.libraryapi.model.entity.Book;
 import com.mehdymokhtari.libraryapi.model.entity.BorrowingRecord;
+import com.mehdymokhtari.libraryapi.model.entity.LibraryItem;
 import com.mehdymokhtari.libraryapi.model.enums.BookStatus;
 import com.mehdymokhtari.libraryapi.model.enums.BorrowingStatus;
 import com.mehdymokhtari.libraryapi.model.mapper.BorrowingRecordMapper;
-import com.mehdymokhtari.libraryapi.repository.BookRepository;
 import com.mehdymokhtari.libraryapi.repository.BorrowingRecordRepository;
+import com.mehdymokhtari.libraryapi.repository.LibraryItemRepository;
 import com.mehdymokhtari.libraryapi.service.impl.BorrowingServiceImpl;
-import com.mehdymokhtari.libraryapi.service.validation.BookStatusValidator;
-import com.mehdymokhtari.libraryapi.service.validation.BookValidationService;
 import com.mehdymokhtari.libraryapi.service.validation.BorrowingValidator;
 
 @ExtendWith(MockitoExtension.class)
 class BorrowingServiceTest {
 
-  @Mock private BorrowingRecordRepository borrowingRecordRepository;
+    @Mock
+    private BorrowingRecordRepository borrowingRecordRepository;
 
-  @Mock private BookRepository bookRepository;
+    @Mock
+    private LibraryItemRepository libraryItemRepository;
 
-  @Mock private BorrowingRecordMapper borrowingRecordMapper;
+    @Mock
+    private BorrowingRecordMapper borrowingRecordMapper;
 
-  @Mock private BookValidationService bookValidationService;
+    @Mock
+    private BorrowingValidator borrowingValidator;
 
-  @Mock private BorrowingValidator borrowingValidator;
+    @InjectMocks
+    private BorrowingServiceImpl borrowingService;
 
-  @Mock private BookStatusValidator bookStatusValidator;
+    private Book book;
+    private BorrowingRecord borrowingRecord;
+    private BorrowRequest borrowRequest;
+    private ReturnRequest returnRequest;
+    private BorrowingRecordResponse borrowingResponse;
 
-  @InjectMocks private BorrowingServiceImpl borrowingService;
+    @BeforeEach
+    void setUp() {
+        book = Book.builder()
+                .id(1L)
+                .title("Clean Code")
+                .author("Robert Martin")
+                .isbn("9780132350884")
+                .publicationYear(2008)
+                .status(BookStatus.AVAILABLE)
+                .deleted(false)
+                .build();
 
-  private Book book;
-  private BorrowingRecord borrowingRecord;
-  private BorrowRequest borrowRequest;
-  private ReturnRequest returnRequest;
-  private BorrowingRecordResponse borrowingResponse;
+        borrowingRecord = BorrowingRecord.builder()
+                .id(1L)
+                .item(book)
+                .borrowerName("John Doe")
+                .borrowedDate(LocalDate.now())
+                .status(BorrowingStatus.BORROWED)
+                .build();
 
-  @BeforeEach
-  void setUp() {
-    book =
-        Book.builder()
-            .id(1L)
-            .title("Clean Code")
-            .author("Robert Martin")
-            .isbn("9780132350884")
-            .publicationYear(2008)
-            .status(BookStatus.AVAILABLE)
-            .deleted(false)
-            .build();
+        borrowRequest = new BorrowRequest(1L, "John Doe");
+        returnRequest = new ReturnRequest(1L);
 
-    borrowingRecord =
-        BorrowingRecord.builder()
-            .id(1L)
-            .book(book)
-            .borrowerName("John Doe")
-            .borrowedDate(LocalDate.now())
-            .status(BorrowingStatus.BORROWED)
-            .build();
+        borrowingResponse = new BorrowingRecordResponse(
+                1L,
+                1L,
+                "Clean Code",
+                "John Doe",
+                LocalDate.now(),
+                null,
+                BorrowingStatus.BORROWED,
+                null,
+                null);
+    }
 
-    borrowRequest = new BorrowRequest(1L, "John Doe");
-    returnRequest = new ReturnRequest(1L);
+    @Test
+    void shouldBorrowItemSuccessfully() {
+        // Test: Borrow available item successfully
+        when(libraryItemRepository.findByIdAndDeletedFalse(1L))
+                .thenReturn(java.util.Optional.of(book));
+        doNothing().when(borrowingValidator).validateBorrowerName("John Doe");
+        doNothing().when(borrowingValidator).validateItemAvailable(book);
+        doNothing().when(borrowingValidator).validateItemNotAlreadyBorrowed(1L);
+        when(borrowingRecordMapper.toEntity(borrowRequest, book)).thenReturn(borrowingRecord);
+        when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(borrowingRecord);
+        when(borrowingRecordMapper.toResponse(any(BorrowingRecord.class)))
+                .thenReturn(borrowingResponse);
 
-    borrowingResponse =
-        new BorrowingRecordResponse(
-            1L,
-            1L,
-            "Clean Code",
-            "John Doe",
-            LocalDate.now(),
-            null,
-            BorrowingStatus.BORROWED,
-            null,
-            null);
-  }
+        BorrowingRecordResponse result = borrowingService.borrowItem(borrowRequest);
 
-  @Test
-  void shouldBorrowBookSuccessfully() {
-    // Test: Borrow available book successfully
-    when(bookValidationService.validateAndGetBook(1L)).thenReturn(book);
-    doNothing().when(borrowingValidator).validateBorrowerName("John Doe");
-    doNothing().when(bookStatusValidator).validateBookCanBeBorrowed(book);
-    when(borrowingRecordMapper.toEntity(borrowRequest, book)).thenReturn(borrowingRecord);
-    when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(borrowingRecord);
-    when(bookRepository.save(any(Book.class))).thenReturn(book);
-    when(borrowingRecordMapper.toResponse(any(BorrowingRecord.class)))
-        .thenReturn(borrowingResponse);
+        assertThat(result).isNotNull();
+        assertThat(result.itemId()).isEqualTo(1L);
+        assertThat(result.borrowerName()).isEqualTo("John Doe");
+        assertThat(result.status()).isEqualTo(BorrowingStatus.BORROWED);
+        verify(book).borrow();
+        verify(libraryItemRepository).save(book);
+        verify(borrowingRecordRepository).save(borrowingRecord);
+    }
 
-    BorrowingRecordResponse result = borrowingService.borrowBook(borrowRequest);
+    @Test
+    void shouldThrowExceptionWhenBorrowingUnavailableItem() {
+        // Test: Borrow unavailable item throws exception
+        book.setStatus(BookStatus.BORROWED);
+        when(libraryItemRepository.findByIdAndDeletedFalse(1L))
+                .thenReturn(java.util.Optional.of(book));
+        doNothing().when(borrowingValidator).validateBorrowerName("John Doe");
+        doThrow(new BusinessException("Item with ID 1 is not available for borrowing"))
+                .when(borrowingValidator).validateItemAvailable(book);
 
-    assertThat(result).isNotNull();
-    assertThat(result.bookId()).isEqualTo(1L);
-    assertThat(result.borrowerName()).isEqualTo("John Doe");
-    assertThat(result.status()).isEqualTo(BorrowingStatus.BORROWED);
-    verify(book).borrow();
-    verify(bookRepository).save(book);
-    verify(borrowingRecordRepository).save(borrowingRecord);
-  }
+        assertThatThrownBy(() -> borrowingService.borrowItem(borrowRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Item with ID 1 is not available for borrowing");
+    }
 
-  @Test
-  void shouldThrowExceptionWhenBorrowingUnavailableBook() {
-    // Test: Borrow unavailable book throws exception
-    book.setStatus(BookStatus.BORROWED);
-    when(bookValidationService.validateAndGetBook(1L)).thenReturn(book);
-    doThrow(new BusinessException("Book with ID 1 is not available for borrowing"))
-        .when(bookStatusValidator)
-        .validateBookCanBeBorrowed(book);
+    @Test
+    void shouldThrowExceptionWhenItemNotFoundForBorrowing() {
+        // Test: Borrow non-existing item throws exception
+        when(libraryItemRepository.findByIdAndDeletedFalse(999L))
+                .thenReturn(java.util.Optional.empty());
 
-    assertThatThrownBy(() -> borrowingService.borrowBook(borrowRequest))
-        .isInstanceOf(BusinessException.class)
-        .hasMessage("Book with ID 1 is not available for borrowing");
-  }
+        BorrowRequest invalidRequest = new BorrowRequest(999L, "John Doe");
 
-  @Test
-  void shouldThrowExceptionWhenBookNotFoundForBorrowing() {
-    // Test: Borrow non-existing book throws exception
-    when(bookValidationService.validateAndGetBook(999L))
-        .thenThrow(new BusinessException("Book with ID 999 does not exist"));
+        assertThatThrownBy(() -> borrowingService.borrowItem(invalidRequest))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("LibraryItem with ID 999 not found");
+    }
 
-    BorrowRequest invalidRequest = new BorrowRequest(999L, "John Doe");
+    @Test
+    void shouldReturnItemSuccessfully() {
+        // Test: Return borrowed item successfully
+        book.setStatus(BookStatus.BORROWED);
+        borrowingRecord.setStatus(BorrowingStatus.BORROWED);
 
-    assertThatThrownBy(() -> borrowingService.borrowBook(invalidRequest))
-        .isInstanceOf(BusinessException.class)
-        .hasMessage("Book with ID 999 does not exist");
-  }
+        BorrowingRecord returnedRecord = BorrowingRecord.builder()
+                .id(1L)
+                .item(book)
+                .borrowerName("John Doe")
+                .borrowedDate(LocalDate.now().minusDays(5))
+                .returnDate(LocalDate.now())
+                .status(BorrowingStatus.RETURNED)
+                .build();
 
-  @Test
-  void shouldReturnBookSuccessfully() {
-    // Test: Return borrowed book successfully
-    book.setStatus(BookStatus.BORROWED);
-    borrowingRecord.setStatus(BorrowingStatus.BORROWED);
+        BorrowingRecordResponse returnedResponse = new BorrowingRecordResponse(
+                1L,
+                1L,
+                "Clean Code",
+                "John Doe",
+                LocalDate.now().minusDays(5),
+                LocalDate.now(),
+                BorrowingStatus.RETURNED,
+                null,
+                null);
 
-    BorrowingRecord returnedRecord =
-        BorrowingRecord.builder()
-            .id(1L)
-            .book(book)
-            .borrowerName("John Doe")
-            .borrowedDate(LocalDate.now().minusDays(5))
-            .returnDate(LocalDate.now())
-            .status(BorrowingStatus.RETURNED)
-            .build();
+        when(libraryItemRepository.findByIdAndDeletedFalse(1L))
+                .thenReturn(java.util.Optional.of(book));
+        doNothing().when(borrowingValidator).validateItemBorrowed(book);
+        when(borrowingValidator.validateAndGetActiveBorrowing(1L)).thenReturn(borrowingRecord);
+        when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(returnedRecord);
+        when(borrowingRecordMapper.toResponse(any(BorrowingRecord.class))).thenReturn(returnedResponse);
 
-    BorrowingRecordResponse returnedResponse =
-        new BorrowingRecordResponse(
-            1L,
-            1L,
-            "Clean Code",
-            "John Doe",
-            LocalDate.now().minusDays(5),
-            LocalDate.now(),
-            BorrowingStatus.RETURNED,
-            null,
-            null);
+        BorrowingRecordResponse result = borrowingService.returnItem(returnRequest);
 
-    when(bookValidationService.validateAndGetBook(1L)).thenReturn(book);
-    doNothing().when(bookStatusValidator).validateBookCanBeReturned(book);
-    when(borrowingValidator.validateAndGetActiveBorrowing(1L)).thenReturn(borrowingRecord);
-    when(borrowingRecordRepository.save(any(BorrowingRecord.class))).thenReturn(returnedRecord);
-    when(bookRepository.save(any(Book.class))).thenReturn(book);
-    when(borrowingRecordMapper.toResponse(any(BorrowingRecord.class))).thenReturn(returnedResponse);
+        assertThat(result).isNotNull();
+        assertThat(result.status()).isEqualTo(BorrowingStatus.RETURNED);
+        assertThat(result.returnDate()).isNotNull();
+        verify(book).returnItem();
+        verify(libraryItemRepository).save(book);
+        verify(borrowingRecordRepository).save(any(BorrowingRecord.class));
+    }
 
-    BorrowingRecordResponse result = borrowingService.returnBook(returnRequest);
+    @Test
+    void shouldThrowExceptionWhenReturningNotBorrowedItem() {
+        // Test: Return item that is not borrowed throws exception
+        book.setStatus(BookStatus.AVAILABLE);
+        when(libraryItemRepository.findByIdAndDeletedFalse(1L))
+                .thenReturn(java.util.Optional.of(book));
+        doThrow(new BusinessException("Item with ID 1 is not currently borrowed"))
+                .when(borrowingValidator).validateItemBorrowed(book);
 
-    assertThat(result).isNotNull();
-    assertThat(result.status()).isEqualTo(BorrowingStatus.RETURNED);
-    assertThat(result.returnDate()).isNotNull();
-    verify(book).returnBook();
-    verify(bookRepository).save(book);
-    verify(borrowingRecordRepository).save(any(BorrowingRecord.class));
-  }
+        assertThatThrownBy(() -> borrowingService.returnItem(returnRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Item with ID 1 is not currently borrowed");
+    }
 
-  @Test
-  void shouldThrowExceptionWhenReturningNotBorrowedBook() {
-    // Test: Return book that is not borrowed throws exception
-    book.setStatus(BookStatus.AVAILABLE);
-    when(bookValidationService.validateAndGetBook(1L)).thenReturn(book);
-    doThrow(new BusinessException("Book with ID 1 is not currently borrowed"))
-        .when(bookStatusValidator)
-        .validateBookCanBeReturned(book);
+    @Test
+    void shouldThrowExceptionWhenNoActiveBorrowingRecordForReturn() {
+        // Test: Return item with no active borrowing record throws exception
+        book.setStatus(BookStatus.BORROWED);
+        when(libraryItemRepository.findByIdAndDeletedFalse(1L))
+                .thenReturn(java.util.Optional.of(book));
+        doNothing().when(borrowingValidator).validateItemBorrowed(book);
+        when(borrowingValidator.validateAndGetActiveBorrowing(1L))
+                .thenThrow(new BusinessException("No active borrowing record found for item ID: 1"));
 
-    assertThatThrownBy(() -> borrowingService.returnBook(returnRequest))
-        .isInstanceOf(BusinessException.class)
-        .hasMessage("Book with ID 1 is not currently borrowed");
-  }
+        assertThatThrownBy(() -> borrowingService.returnItem(returnRequest))
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("No active borrowing record found for item ID: 1");
+    }
 
-  @Test
-  void shouldThrowExceptionWhenNoActiveBorrowingRecordForReturn() {
-    // Test: Return book with no active borrowing record throws exception
-    book.setStatus(BookStatus.BORROWED);
-    when(bookValidationService.validateAndGetBook(1L)).thenReturn(book);
-    doNothing().when(bookStatusValidator).validateBookCanBeReturned(book);
-    when(borrowingValidator.validateAndGetActiveBorrowing(1L))
-        .thenThrow(new BusinessException("No active borrowing record found for book ID: 1"));
+    @Test
+    void shouldGetBorrowingHistoryByItem() {
+        // Test: Get borrowing history for an item
+        List<BorrowingRecord> records = List.of(borrowingRecord);
+        List<BorrowingRecordResponse> responses = List.of(borrowingResponse);
 
-    assertThatThrownBy(() -> borrowingService.returnBook(returnRequest))
-        .isInstanceOf(BusinessException.class)
-        .hasMessage("No active borrowing record found for book ID: 1");
-  }
+        when(libraryItemRepository.existsByIdAndDeletedFalse(1L)).thenReturn(true);
+        when(borrowingRecordRepository.findAllByItemIdOrderByBorrowedDateDesc(1L))
+                .thenReturn(records);
+        when(borrowingRecordMapper.toResponseList(records)).thenReturn(responses);
 
-  @Test
-  void shouldGetBorrowingHistoryByBook() {
-    // Test: Get borrowing history for a book
-    List<BorrowingRecord> records = List.of(borrowingRecord);
-    List<BorrowingRecordResponse> responses = List.of(borrowingResponse);
+        List<BorrowingRecordResponse> result = borrowingService.getBorrowingHistoryByItem(1L);
 
-    when(bookRepository.existsByIdAndIsDeletedFalse(1L)).thenReturn(true);
-    when(borrowingRecordRepository.findAllByBookIdOrderByBorrowedDateDesc(1L)).thenReturn(records);
-    when(borrowingRecordMapper.toResponseList(records)).thenReturn(responses);
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).itemId()).isEqualTo(1L);
+    }
 
-    List<BorrowingRecordResponse> result = borrowingService.getBorrowingHistoryByBook(1L);
+    @Test
+    void shouldThrowExceptionWhenGettingHistoryForNonExistingItem() {
+        // Test: Get borrowing history for non-existing item throws exception
+        when(libraryItemRepository.existsByIdAndDeletedFalse(999L)).thenReturn(false);
 
-    assertThat(result).isNotNull();
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).bookId()).isEqualTo(1L);
-  }
+        assertThatThrownBy(() -> borrowingService.getBorrowingHistoryByItem(999L))
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessage("LibraryItem with ID 999 not found");
+    }
 
-  @Test
-  void shouldThrowExceptionWhenGettingHistoryForNonExistingBook() {
-    // Test: Get borrowing history for non-existing book throws exception
-    when(bookRepository.existsByIdAndIsDeletedFalse(999L)).thenReturn(false);
+    @Test
+    void shouldGetBorrowingHistoryByBorrower() {
+        // Test: Get borrowing history by borrower name
+        List<BorrowingRecord> records = List.of(borrowingRecord);
+        List<BorrowingRecordResponse> responses = List.of(borrowingResponse);
 
-    assertThatThrownBy(() -> borrowingService.getBorrowingHistoryByBook(999L))
-        .isInstanceOf(BusinessException.class)
-        .hasMessage("Book with ID 999 does not exist");
-  }
+        when(borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc("John"))
+                .thenReturn(records);
+        when(borrowingRecordMapper.toResponseList(records)).thenReturn(responses);
 
-  @Test
-  void shouldGetBorrowingHistoryByBorrower() {
-    // Test: Get borrowing history by borrower name
-    List<BorrowingRecord> records = List.of(borrowingRecord);
-    List<BorrowingRecordResponse> responses = List.of(borrowingResponse);
+        List<BorrowingRecordResponse> result = borrowingService.getBorrowingHistoryByBorrower("John");
 
-    when(borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc(
-            "John"))
-        .thenReturn(records);
-    when(borrowingRecordMapper.toResponseList(records)).thenReturn(responses);
+        assertThat(result).isNotNull();
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).borrowerName()).isEqualTo("John Doe");
+    }
 
-    List<BorrowingRecordResponse> result = borrowingService.getBorrowingHistoryByBorrower("John");
+    @Test
+    void shouldReturnEmptyListWhenBorrowerHasNoHistory() {
+        // Test: Get borrowing history for borrower with no records returns empty list
+        when(borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc("Unknown"))
+                .thenReturn(List.of());
+        when(borrowingRecordMapper.toResponseList(anyList())).thenReturn(List.of());
 
-    assertThat(result).isNotNull();
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).borrowerName()).isEqualTo("John Doe");
-  }
+        List<BorrowingRecordResponse> result = borrowingService.getBorrowingHistoryByBorrower("Unknown");
 
-  @Test
-  void shouldReturnEmptyListWhenBorrowerHasNoHistory() {
-    // Test: Get borrowing history for borrower with no records returns empty list
-    when(borrowingRecordRepository.findByBorrowerNameContainingIgnoreCaseOrderByBorrowedDateDesc(
-            "Unknown"))
-        .thenReturn(List.of());
-    when(borrowingRecordMapper.toResponseList(anyList())).thenReturn(List.of());
-
-    List<BorrowingRecordResponse> result =
-        borrowingService.getBorrowingHistoryByBorrower("Unknown");
-
-    assertThat(result).isNotNull();
-    assertThat(result).isEmpty();
-  }
+        assertThat(result).isNotNull();
+        assertThat(result).isEmpty();
+    }
 }
