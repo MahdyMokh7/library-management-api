@@ -6,9 +6,9 @@ services:
     container_name: library-postgres
     restart: always
     environment:
-      POSTGRES_DB: library_db
-      POSTGRES_USER: library_user
-      POSTGRES_PASSWORD: library_password
+      POSTGRES_DB: ${POSTGRES_DB:-library_db}
+      POSTGRES_USER: ${POSTGRES_USER:-library_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-library_password}
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
     ports:
       - "5432:5432"
@@ -17,7 +17,7 @@ services:
     networks:
       - library-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U library_user -d library_db"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-library_user} -d $${POSTGRES_DB:-library_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,15 +33,13 @@ services:
         condition: service_healthy
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/library_db
-      SPRING_DATASOURCE_USERNAME: library_user
-      SPRING_DATASOURCE_PASSWORD: library_password
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-library_db}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-library_user}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-library_password}
       SPRING_FLYWAY_ENABLED: true
       TZ: UTC
     ports:
       - "8080:8080"
-    volumes:
-      - ./logs:/app/logs
     networks:
       - library-network
     healthcheck:

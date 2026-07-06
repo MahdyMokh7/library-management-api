@@ -15,7 +15,7 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     steps:
       # Clone the repository
@@ -38,67 +38,40 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      # Run all unit tests
-      - name: Run Unit Tests
-        run: mvn test
+      # Enforce Google Java Format (Fail early if code style is wrong)
+      - name: Check code formatting
+        run: mvn spotless:check
+
+      # Start ONLY Postgres and wait for its healthcheck to pass before testing starts
+      - name: Start Database for Tests
+        run: docker compose up -d --wait postgres
+
+      # Run all tests (Unit + Integration) and static analysis in a single, efficient lifecycle run
+      - name: Run Build, Test and Static Analysis
+        run: mvn clean verify pmd:check
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ env.POSTGRES_DB }}
           SPRING_DATASOURCE_USERNAME: ${{ env.POSTGRES_USER }}
           SPRING_DATASOURCE_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
 
-      # Package application into JAR file
-      - name: Build and Package
-        run: mvn clean package -DskipTests
-
-      # Create Docker image from JAR
-      - name: Build Docker image
-        run: docker build -t library-api:latest .
-
-      # Start containers (app + postgres)
-      - name: Start Docker Compose services
-        run: docker compose up -d
-
-      # Wait for app to be healthy before running integration tests
-      - name: Wait for application to be ready
-        run: |
-          echo "Waiting for application to start..."
-          for i in {1..30}; do
-            if curl -s -f http://localhost:8080/actuator/health > /dev/null; then
-              echo "Application is ready!"
-              exit 0
-            fi
-            echo "Attempt $i/30 - Application not ready yet. Waiting..."
-            sleep 5
-          done
-          echo "Application failed to start within timeout"
-          docker compose logs
-          exit 1
-
-      # Run integration tests against running containers
-      - name: Run Integration Tests
-        run: docker compose exec -T app mvn verify -DskipTests=false
-        env:
-          SPRING_PROFILES_ACTIVE: docker
-          SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${{ env.POSTGRES_DB }}
-          SPRING_DATASOURCE_USERNAME: ${{ env.POSTGRES_USER }}
-          SPRING_DATASOURCE_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-
-      # Generate code coverage report
+      # Generate code coverage report directly on the runner
       - name: Generate JaCoCo coverage report
-        run: docker compose exec -T app mvn jacoco:report
+        if: always()
+        run: mvn jacoco:report
 
       # Upload coverage report as artifact for download
       - name: Upload coverage report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: target/site/jacoco/
           retention-days: 7
 
-      # Enforce Google Java Format
-      - name: Check code formatting
-        run: mvn spotless:check
+      # Create Docker image to ensure the application packages into its final container cleanly
+      - name: Build Docker image
+        run: docker build -t library-api:latest .
 
       # Always cleanup even if previous steps failed
       - name: Stop Docker Compose services
