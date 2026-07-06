@@ -47,7 +47,7 @@ A robust Library Management System built with Spring Boot and Java 22, providing
 Before running the project, ensure you have the following installed:
 
 - ☕ Java 22 or higher
-- 📦 Maven 3.9+
+- 📦 Maven 4.0+
 - 🐘 PostgreSQL 15+ (for local development)
 - 🐳 Docker and Docker Compose (for containerized deployment)
 - 🔧 Git
@@ -55,106 +55,69 @@ Before running the project, ensure you have the following installed:
 
 ---
 
-## 🚀 How to Run the Project
+## 🚀 Quick Start
 
-### Option 1: Docker (Recommended for Production)
 
-**This is the preferred method** as it ensures consistency across environments.
 
+### Default (Recommended)
+
+The project includes an automation script that handles everything from formatting to deployment.
+
+**First time only (if on Unix/Linux-based system):**
 ```bash
-# 1. Clone the repository
-git clone https://github.com/MahdyMokh7/library-management-api.git
-cd library-management-api
-
-# 2. Build the Docker image
-docker build -t library-api:1.0.0 .
-
-# 3. Start all services (PostgreSQL + Application)
-docker-compose up -d
-
-# 4. Wait for services to start (approx 30 seconds)
-docker-compose logs -f app
-
-# 5. Verify the application is running
-curl http://localhost:8080/actuator/health
+chmod +x start.sh
 ```
 
-**Docker will handle:**
-- ✅ PostgreSQL database setup
-- ✅ Database migrations (Flyway)
-- ✅ Application deployment
-- ✅ Network configuration
+**Run the full stack:**
+```bash
+./start.sh run
+```
+
+This single command:
+- ✅ Applies code formatting (Spotless)
+- ✅ Runs all tests (unit + integration)
+- ✅ Runs coverage tests (Jacoco)
+- ✅ Static code analysis (PMD)
+- ✅ Builds the Docker image with your current version
+- ✅ Starts PostgreSQL + the application
+
+**Reset everything:**
+```bash
+./start.sh clean
+```
+Stops all containers and removes database volumes.
 
 ---
 
-### Option 2: Local Development (Maven)
+### Access the API
 
-**Use this for active development** with faster feedback loops.
+| Service | URL |
+|---------|-----|
+| 🌐 **API Base** | `http://localhost:8080/api/v1` |
+| 📚 **Swagger UI** | `http://localhost:8080/swagger-ui/index.html` |
+| 💚 **Health Check** | `http://localhost:8080/actuator/health` |
 
-#### 1. Clone the Repository
+---
+
+### Manual Setup (Alternative)
+
+If you prefer running without the automation script:
+
 ```bash
-git clone https://github.com/MahdyMokh7/library-management-api.git
-cd library-management-api
-```
+# 1. Build the project
+mvn clean package -DskipTests
 
-#### 2. Configure Database
+# 2. Start PostgreSQL
+docker-compose up -d postgres
 
-Create a PostgreSQL database:
-```sql
-CREATE DATABASE library_db;
-CREATE USER library_user WITH PASSWORD 'library_password';
-GRANT ALL PRIVILEGES ON DATABASE library_db TO library_user;
-```
-
-Update `application.yml` with your credentials:
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/library_db
-    username: library_user
-    password: library_password
-```
-
-#### 3. Build the Project
-```bash
-mvn clean install
-```
-
-#### 4. Run Database Migrations
-Flyway will automatically run migrations on application startup.
-
-#### 5. Run the Application
-```bash
+# 3. Run the application
 mvn spring-boot:run
 ```
 
-Or using the JAR:
+**Or using the JAR:**
 ```bash
 java -jar target/libraryapi.jar
 ```
-
----
-
-### Option 3: Quick Development (Docker for DB only)
-
-**Use this to develop with Docker database but Maven for the app.**
-
-```bash
-# Start only PostgreSQL in Docker
-docker-compose up -d postgres
-
-# Run the application with Maven
-mvn spring-boot:run
-```
-
----
-
-### Access the Application
-
-- 🌐 **API Base URL**: `http://localhost:8080/api/v1`
-- 📚 **Swagger UI**: `http://localhost:8080/swagger-ui.html`
-- 📊 **OpenAPI Docs**: `http://localhost:8080/v3/api-docs`
-- 💚 **Health Check**: `http://localhost:8080/actuator/health`
 
 ---
 
@@ -192,12 +155,17 @@ library-management-api/
 │       ├── java/com/mehdymokhtari/libraryapi/
 │       │   ├── controller/          # Controller unit tests
 │       │   ├── service/             # Service unit tests
+│       │   ├── utils/               # Utils unit tests
+│       │   ├── exception/           # Excpetion unit tests
+│       │   ├── filter/              # Filter unit tests
+│       │   ├── model/mapper/        # mapper unit tests
 │       │   ├── repository/          # Repository integration tests
 │       │   └── integration/         # End-to-end integration tests
 │       └── resources/
 │           └── application-test.yml # Test configuration
 ├── docs/
 │   ├── Project Documentation.pdf    # Official project specification
+│   ├── Report.pdf                   # Project Report
 │   └── devGuideSetup/               # Developer setup guide files
 ├── scripts/
 │   └── start.sh                     # Application start script
@@ -207,6 +175,7 @@ library-management-api/
 ├── Dockerfile                       # Docker image definition
 ├── docker-compose.yml               # Docker services orchestration
 ├── .dockerignore                    # Docker ignore file
+├── .gitignore                       # Git ignore file
 ├── pom.xml                          # Maven dependencies
 ├── LICENSE                          # License file
 └── README.md                        # Project documentation
