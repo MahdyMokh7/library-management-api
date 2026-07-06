@@ -1,6 +1,11 @@
 # Multi-stage Dockerfile for Library Management System
-# Build stage
-FROM maven:3.9.6-eclipse-temurin-22-alpine AS build
+
+# ---- Build Stage ----
+# Using Amazon Corretto 22 for reliable, production-grade Java builds
+FROM amazoncorretto:22.0.1-alpine AS build
+
+# Install Maven in the build stage
+RUN apk add --no-cache maven
 
 WORKDIR /app
 
@@ -12,13 +17,14 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests -Pprod
 
-# Runtime stage
-FROM eclipse-temurin:22-jdk-alpine
+# ---- Runtime Stage ----
+# Using Amazon Corretto 22 for production runtime
+FROM amazoncorretto:22.0.1-alpine
 
 # Install curl for health checks
 RUN apk add --no-cache curl
 
-# Create non-root user
+# Create non-root user for security
 RUN addgroup -S spring && adduser -S spring -G spring
 
 WORKDIR /app
@@ -30,8 +36,8 @@ COPY --from=build /app/target/libraryapi.jar app.jar
 RUN chown -R spring:spring /app
 USER spring
 
-# JVM options
-ENV JAVA_OPTS="-Xmx512m -Xms256m"
+# JVM options optimized for container environments
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 EXPOSE 8080
 

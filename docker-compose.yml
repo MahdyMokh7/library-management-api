@@ -9,6 +9,7 @@ services:
       POSTGRES_DB: library_db
       POSTGRES_USER: library_user
       POSTGRES_PASSWORD: library_password
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
     ports:
       - "5432:5432"
     volumes:
@@ -36,6 +37,7 @@ services:
       SPRING_DATASOURCE_USERNAME: library_user
       SPRING_DATASOURCE_PASSWORD: library_password
       SPRING_FLYWAY_ENABLED: true
+      TZ: UTC
     ports:
       - "8080:8080"
     volumes:
@@ -68,6 +70,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
 
 networks:
   library-network:
+    driver: bridge
