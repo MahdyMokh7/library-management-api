@@ -23,6 +23,7 @@ services:
       retries: 5
 
   app:
+    image: library-api:${IMAGE_VERSION:-1.0.0}
     build:
       context: .
       dockerfile: Dockerfile
