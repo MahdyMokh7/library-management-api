@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: dev
   application:
     name: library-api
   datasource:
@@ -20,6 +22,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         show_sql: false
+        javax.persistence.validation.mode: none
         jdbc:
           batch_size: 20
         order_inserts: true

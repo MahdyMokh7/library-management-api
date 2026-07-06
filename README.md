@@ -35,7 +35,7 @@ A robust Library Management System built with Spring Boot and Java 22, providing
 | **Mockito** | 5.10.0      | Mocking framework |
 | **Testcontainers** | 1.19.7      | Integration testing |
 | **JaCoCo** | 0.8.12      | Code coverage |
-| **PMD** | 3.26.0      | Static code analysis |
+| **PMD** | 7.7.0       | Static code analysis |
 | **Spotless** | 2.41.0      | Code formatting |
 | **Docker** | Latest      | Containerization |
 | **GitHub Actions** | -           | CI/CD pipeline |
