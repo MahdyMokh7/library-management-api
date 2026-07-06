@@ -77,7 +77,7 @@ jobs:
 
       # Run integration tests against running containers
       - name: Run Integration Tests
-        run: docker compose run --rm app mvn verify
+        run: docker compose exec -T app mvn verify -DskipTests=false
         env:
           SPRING_PROFILES_ACTIVE: docker
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${{ env.POSTGRES_DB }}
@@ -86,7 +86,7 @@ jobs:
 
       # Generate code coverage report
       - name: Generate JaCoCo coverage report
-        run: docker compose run --rm app mvn jacoco:report
+        run: docker compose exec -T app mvn jacoco:report
 
       # Upload coverage report as artifact for download
       - name: Upload coverage report
