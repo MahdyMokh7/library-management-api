@@ -147,7 +147,6 @@ library-management-api/
 │   │   │   └── util/                # Utility classes
 │   │   └── resources/
 │   │       ├── application.yml      # Main configuration
-│   │       ├── application-docker.yml # Docker-specific config
 │   │       ├── db/
 │   │       │   └── migration/        # Flyway migrations
 │   │       └── static/              # Static resources
