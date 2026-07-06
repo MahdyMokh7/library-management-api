@@ -48,7 +48,7 @@ jobs:
 
       # Cache downloaded dependencies for faster builds
       - name: Cache Maven dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -73,7 +73,7 @@ jobs:
 
       # Start containers (app + postgres)
       - name: Start Docker Compose services
-        run: docker-compose up -d
+        run: docker compose up -d
 
       # Wait for app to be healthy before running integration tests
       - name: Wait for application to be ready
@@ -88,12 +88,12 @@ jobs:
             sleep 5
           done
           echo "Application failed to start within timeout"
-          docker-compose logs
+          docker compose logs
           exit 1
 
       # Run integration tests against running containers
       - name: Run Integration Tests
-        run: docker-compose run --rm app mvn verify
+        run: docker compose run --rm app mvn verify
         env:
           SPRING_PROFILES_ACTIVE: docker
           SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${{ env.POSTGRES_DB }}
@@ -102,7 +102,7 @@ jobs:
 
       # Generate code coverage report
       - name: Generate JaCoCo coverage report
-        run: docker-compose run --rm app mvn jacoco:report
+        run: docker compose run --rm app mvn jacoco:report
 
       # Upload coverage report as artifact for download
       - name: Upload coverage report
@@ -119,4 +119,4 @@ jobs:
       # Always cleanup even if previous steps failed
       - name: Stop Docker Compose services
         if: always()
-        run: docker-compose down
+        run: docker compose down
