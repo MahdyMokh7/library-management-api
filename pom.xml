@@ -324,13 +324,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.21.2</version>
+                <version>3.26.0</version>
                 <configuration>
                     <rulesets>
                         <ruleset>rulesets/java/quickstart.xml</ruleset>
                     </rulesets>
                     <failOnViolation>true</failOnViolation>
                     <printFailingErrors>true</printFailingErrors>
+                    <targetJdk>22</targetJdk>
+
+                    <excludes>
+                        <exclude>**/generated-sources/**/*.java</exclude>
+                        <exclude>**/*MapperImpl.java</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <execution>

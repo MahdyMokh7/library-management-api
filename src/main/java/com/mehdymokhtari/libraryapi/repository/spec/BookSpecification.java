@@ -2,6 +2,7 @@ package com.mehdymokhtari.libraryapi.repository.spec;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -12,7 +13,7 @@ import com.mehdymokhtari.libraryapi.filter.BookFilter;
 import com.mehdymokhtari.libraryapi.model.entity.Book;
 import com.mehdymokhtari.libraryapi.model.enums.BookStatus;
 
-public class BookSpecification {
+public final class BookSpecification {
 
   private BookSpecification() {}
 
@@ -31,14 +32,14 @@ public class BookSpecification {
         predicates.add(
             criteriaBuilder.like(
                 criteriaBuilder.lower(root.get("title")),
-                "%" + filter.getTitle().toLowerCase() + "%"));
+                "%" + filter.getTitle().toLowerCase(Locale.ROOT) + "%"));
       }
 
       if (StringUtils.hasText(filter.getAuthor())) {
         predicates.add(
             criteriaBuilder.like(
                 criteriaBuilder.lower(root.get("author")),
-                "%" + filter.getAuthor().toLowerCase() + "%"));
+                "%" + filter.getAuthor().toLowerCase(Locale.ROOT) + "%"));
       }
 
       if (filter.getPublicationYear() != null) {
@@ -60,7 +61,7 @@ public class BookSpecification {
         return criteriaBuilder.conjunction();
       }
       return criteriaBuilder.like(
-          criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase() + "%");
+          criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase(Locale.ROOT) + "%");
     };
   }
 
@@ -70,7 +71,7 @@ public class BookSpecification {
         return criteriaBuilder.conjunction();
       }
       return criteriaBuilder.like(
-          criteriaBuilder.lower(root.get("author")), "%" + author.toLowerCase() + "%");
+          criteriaBuilder.lower(root.get("author")), "%" + author.toLowerCase(Locale.ROOT) + "%");
     };
   }
 

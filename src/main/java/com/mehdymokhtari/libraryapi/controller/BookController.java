@@ -2,6 +2,8 @@ package com.mehdymokhtari.libraryapi.controller;
 
 import static org.springframework.http.HttpStatus.*;
 
+import java.util.Locale;
+
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
@@ -24,7 +26,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/books")
 @RequiredArgsConstructor
@@ -35,18 +39,17 @@ public class BookController {
 
   @PostMapping
   @Operation(summary = "Create a new book")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "201",
-            description = "Book created successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Invalid input"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "409",
-            description = "ISBN already exists")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "201",
+        description = "Book created successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "400",
+        description = "Invalid input"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "409",
+        description = "ISBN already exists")
+  })
   public ResponseEntity<ApiResponse<BookResponse>> createBook(
       @Valid @RequestBody BookRequest request) {
     BookResponse response = bookService.createBook(request);
@@ -69,9 +72,9 @@ public class BookController {
     BookStatus bookStatus = null;
     if (status != null) {
       try {
-        bookStatus = BookStatus.valueOf(status.toUpperCase());
+        bookStatus = BookStatus.valueOf(status.toUpperCase(Locale.ROOT));
       } catch (IllegalArgumentException e) {
-        // Invalid status value, will be ignored
+        log.warn("Invalid book status value provided: {}", status);
       }
     }
 
@@ -89,15 +92,14 @@ public class BookController {
 
   @GetMapping("/{id}")
   @Operation(summary = "Get book by ID")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Book found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Book not found")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Book found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Book not found")
+  })
   public ResponseEntity<ApiResponse<BookResponse>> getBookById(@PathVariable Long id) {
     BookResponse response = bookService.getBookById(id);
     return ResponseEntity.ok(ApiResponse.success("Book retrieved successfully", response));
@@ -105,18 +107,17 @@ public class BookController {
 
   @PutMapping("/{id}")
   @Operation(summary = "Update book information")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Book updated successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Book not found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Invalid input")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Book updated successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Book not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "400",
+        description = "Invalid input")
+  })
   public ResponseEntity<ApiResponse<BookResponse>> updateBook(
       @PathVariable Long id, @Valid @RequestBody BookUpdateRequest request) {
     BookResponse response = bookService.updateBook(id, request);
@@ -125,18 +126,17 @@ public class BookController {
 
   @DeleteMapping("/{id}")
   @Operation(summary = "Delete a book (soft delete)")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Book deleted successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Book not found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "409",
-            description = "Book is currently borrowed")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Book deleted successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Book not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "409",
+        description = "Book is currently borrowed")
+  })
   public ResponseEntity<ApiResponse<Void>> deleteBook(@PathVariable Long id) {
     bookService.deleteBook(id);
     return ResponseEntity.ok(ApiResponse.success("Book deleted successfully"));

@@ -31,9 +31,11 @@ public interface BookMapper extends LibraryItemMapper<Book, BookResponse> {
   Book toEntity(BookRequest request);
 
   // converts Book Entity -> BookResponse DTO  (Convert entity to API response)
+  @Override
   BookResponse toResponse(Book entity);
 
   // converts List<Book> Entity -> List<BookResponse> DTO  (Convert multiple entities to responses)
+  @Override
   List<BookResponse> toResponseList(List<Book> entities);
 
   // converts BookUpdateRequest DTO → Book Entity  (Update existing entity with request data)

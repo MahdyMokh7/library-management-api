@@ -173,6 +173,11 @@ library-management-api/
 │       │   ├── controller/          # Controller unit tests
 │       │   ├── service/             # Service unit tests
 │       │   ├── repository/          # Repository integration tests
+│       │   ├── filter/              # filter unit tests
+│       │   ├── model/mapper/         # mapper unit tests
+│       │   ├── repository/          # Repository integration tests
+│       │   ├── exception/            # excpetion handling tests
+│       │   ├── utils/                # utils unit tests
 │       │   └── integration/         # End-to-end integration tests
 │       └── resources/
 │           └── application-test.yml # Test configuration

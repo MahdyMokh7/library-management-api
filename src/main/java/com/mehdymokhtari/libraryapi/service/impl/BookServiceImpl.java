@@ -36,6 +36,7 @@ public class BookServiceImpl implements BookService {
 
   @Override
   @Transactional
+  @SuppressWarnings("PMD.GuardLogStatement")
   public BookResponse createBook(BookRequest request) {
     log.debug("Creating book with ISBN: {}", request.isbn());
     validationService.validateCreateBook(request);
@@ -83,7 +84,9 @@ public class BookServiceImpl implements BookService {
     bookMapper.updateEntity(request, book);
     Book updated = bookRepository.save(book);
 
-    log.info("Book updated with ID: {}", updated.getId());
+    if (log.isInfoEnabled()) {
+      log.info("Book updated with ID: {}", updated.getId());
+    }
     return bookMapper.toResponse(updated);
   }
 

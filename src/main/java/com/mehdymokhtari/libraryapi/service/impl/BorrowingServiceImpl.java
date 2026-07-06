@@ -5,7 +5,10 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mehdymokhtari.libraryapi.exception.*;
+import com.mehdymokhtari.libraryapi.exception.BookNotAvailableException;
+import com.mehdymokhtari.libraryapi.exception.BusinessException;
+import com.mehdymokhtari.libraryapi.exception.ItemNotBorrowedException;
+import com.mehdymokhtari.libraryapi.exception.ResourceNotFoundException;
 import com.mehdymokhtari.libraryapi.model.dto.request.BorrowRequest;
 import com.mehdymokhtari.libraryapi.model.dto.request.ReturnRequest;
 import com.mehdymokhtari.libraryapi.model.dto.response.BorrowingRecordResponse;
@@ -24,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
+@SuppressWarnings("PMD.GuardLogStatement")
 public class BorrowingServiceImpl implements BorrowingService {
 
   private final BorrowingRecordRepository borrowingRecordRepository;

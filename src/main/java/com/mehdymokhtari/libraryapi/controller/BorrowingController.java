@@ -1,7 +1,5 @@
 package com.mehdymokhtari.libraryapi.controller;
 
-import static org.springframework.http.HttpStatus.*;
-
 import java.util.List;
 
 import jakarta.validation.Valid;
@@ -32,21 +30,20 @@ public class BorrowingController {
 
   @PostMapping("/borrow")
   @Operation(summary = "Borrow a book")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Book borrowed successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Invalid input"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Book not found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "409",
-            description = "Book is not available")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Book borrowed successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "400",
+        description = "Invalid input"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Book not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "409",
+        description = "Book is not available")
+  })
   public ResponseEntity<ApiResponse<BorrowingRecordResponse>> borrowItem(
       @Valid @RequestBody BorrowRequest request) {
     BorrowingRecordResponse response = borrowingService.borrowItem(request);
@@ -55,18 +52,17 @@ public class BorrowingController {
 
   @PostMapping("/return")
   @Operation(summary = "Return a book")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Book returned successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Book not found"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "409",
-            description = "Book is not currently borrowed")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "Book returned successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Book not found"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "409",
+        description = "Book is not currently borrowed")
+  })
   public ResponseEntity<ApiResponse<BorrowingRecordResponse>> returnItem(
       @Valid @RequestBody ReturnRequest request) {
     BorrowingRecordResponse response = borrowingService.returnItem(request);
@@ -75,15 +71,14 @@ public class BorrowingController {
 
   @GetMapping("/book/{bookId}")
   @Operation(summary = "Get borrowing history by book ID")
-  @ApiResponses(
-      value = {
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "History retrieved successfully"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Book not found")
-      })
+  @ApiResponses({
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "200",
+        description = "History retrieved successfully"),
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+        responseCode = "404",
+        description = "Book not found")
+  })
   public ResponseEntity<ApiResponse<List<BorrowingRecordResponse>>> getBorrowingHistoryByBook(
       @PathVariable Long bookId) {
     List<BorrowingRecordResponse> response = borrowingService.getBorrowingHistoryByItem(bookId);

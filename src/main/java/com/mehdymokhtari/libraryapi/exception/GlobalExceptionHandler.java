@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 // should generate private static final logger log = from LoggerFactory
 @Slf4j
 @RestControllerAdvice
+@SuppressWarnings("PMD.GuardLogStatement")
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(ResourceNotFoundException.class)
@@ -86,7 +88,7 @@ public class GlobalExceptionHandler {
             .collect(
                 Collectors.toMap(
                     violation -> violation.getPropertyPath().toString(),
-                    violation -> violation.getMessage(),
+                    ConstraintViolation::getMessage,
                     (existing, replacement) -> existing));
 
     ErrorResponse error =
