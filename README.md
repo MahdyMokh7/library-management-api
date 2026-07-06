@@ -228,7 +228,51 @@ GET /api/v1/books?title=Spring&author=John&page=0&size=10&sort=title,asc
 
 ## 🎯 Key Design Decisions
 
-<!-- This section will be completed with 3 important design choices -->
+### 1. Abstract Inheritance with Deferred Implementation
+
+**Decision:** I designed a complete inheritance hierarchy (`LibraryItem` → `PhysicalItem` → `Book`) with abstract intermediate classes, implementing only `Book` while keeping `Magazine`, `Ebook`, and `AudioBook` as abstract placeholders.
+
+**Why I Chose This:** During development, I anticipated that a real library system would need to support multiple media types. Rather than building everything upfront (over-engineering), I created the structure to easily add new types later. The `JOINED` inheritance strategy ensures each new type gets its own table while sharing common fields through the root `library_items` table. This follows the Open/Closed Principle—new types can be added without touching existing `Book` or borrowing logic.
+
+---
+
+### 2. One Borrowing Record Per Transaction
+
+**Decision:** Each borrowing transaction creates a single record that tracks the entire lifecycle (borrow → return), rather than creating separate borrow and return records.
+
+**Why I Chose This:** When building the borrowing system, I realized that tracking one record per transaction is simpler and more performant. A book is borrowed (status: `BORROWED`), and when returned, the same record is updated (status: `RETURNED`). This keeps queries fast (`SELECT * FROM borrowing_records WHERE item_id = ? AND status = 'BORROWED'`), handles partial returns naturally, and provides a complete audit trail—exactly how real library systems work.
+
+---
+
+### 3. Book as Individual Instance (Not Copies)
+
+**Decision:** Each book is stored as a separate record with its own `ISBN` and `status`, rather than using a "copies" counter.
+
+**Why I Chose This:** The specification required tracking each book individually with its own status. During implementation, I considered a "copies" field with `availableCopies` counters but quickly realized it would complicate borrow/return logic, lose individual copy history, and fail to handle scenarios where copies have unique conditions or borrowing histories. Storing each book as an instance keeps the design simple, accurate, and aligned with the document's requirements.
+
+---
+
+### 4. Flyway + JPA Hybrid (Schema Management)
+
+**Decision:** Used Flyway for schema creation and versioning, with JPA's `ddl-auto: validate` for runtime ORM operations.
+
+**Why I Chose This:** I wanted a production-safe approach to database management. Flyway gives me version-controlled SQL migrations stored in `src/main/resources/db/migration/`, providing an audit trail of every schema change. JPA's `ddl-auto: validate` ensures my entities match the database without risking unexpected `ALTER TABLE` commands. This hybrid approach is industry standard—Flyway handles "what the schema looks like" (DDL), while JPA/Hibernate handles "how to map objects to tables" (ORM). I wrote the SQL migrations myself, giving full control over indexes, constraints, and data integrity.
+
+---
+
+### 5. Two Controllers Instead of One
+
+**Decision:** Separated API endpoints into `BookController` (book management) and `BorrowingController` (borrowing/return operations).
+
+**Why I Chose This:** While building the API, I realized that book management (CRUD) and borrowing operations are distinct business capabilities with different validation rules. Having two controllers keeps the code focused and maintainable—changes to borrowing logic don't affect book endpoints. Testing is also simpler with smaller, focused test classes. Swagger groups endpoints by domain, making the API documentation cleaner and more intuitive for consumers.
+
+---
+
+### 6. PostgreSQL over MySQL
+
+**Decision:** PostgreSQL was chosen as the production database.
+
+**Why I Chose This:** I chose PostgreSQL for its advanced features, strong ACID compliance, and rich extension ecosystem. While MySQL is a valid choice, PostgreSQL's superior JSONB support, full-text search capabilities, and proven reliability at scale made it the better foundation for a system that will evolve over time. Flyway makes the database choice transparent, but PostgreSQL provides the strongest foundation for future enhancements like geospatial library branches or advanced search.
 
 ---
 
@@ -247,20 +291,53 @@ GET /api/v1/books?title=Spring&author=John&page=0&size=10&sort=title,asc
 
 Given more time, the following improvements would be implemented:
 
-1. **Authentication & Authorization**: JWT-based user authentication with roles (LIBRARIAN, MEMBER)
-2. **Email Notifications**: Automated reminder emails for overdue books
-3. **Reports & Analytics**: Dashboard with borrowing statistics and popular books
-4. **Caching**: Redis implementation for frequently accessed book data
-5. **Event-Driven Architecture**: Use RabbitMQ/Kafka for async operations
-6. **Reservation System**: Allow users to reserve books that are currently borrowed
-7. **Internationalization**: Multi-language support for API responses
-8. **Rate Limiting**: Prevent API abuse with request throttling
-9. **Audit Logs**: Complete audit trail for all operations
-10. **API Versioning**: Proper versioning strategy for API evolution
-11. **GraphQL Support**: Alternative query interface for flexibility
-12. **WebSocket Notifications**: Real-time updates for book availability
-13. **Bulk Operations**: Import/export books via CSV/Excel
-14. **Search Optimization**: Elasticsearch integration for advanced search
+### 1. Authentication & Authorization
+- JWT-based user authentication with role-based access control (LIBRARIAN, MEMBER)
+- Secure endpoint protection and method-level security using Spring Security
+
+### 2. Reports & Analytics Dashboard
+- Interactive dashboard showing borrowing statistics, popular books, and user activity trends
+- Exportable reports (PDF, Excel) for administrative insights and decision-making
+
+### 3. Email Notifications
+- Automated reminder emails for overdue books before and after due dates
+- Confirmation emails for successful borrowings, returns, and reservations
+
+### 4. Caching Layer with Redis
+- Implement Redis caching for frequently accessed book data and search results
+- Reduce database load and improve API response times for high-traffic endpoints
+
+### 5. Reservation System
+- Allow users to reserve books that are currently borrowed
+
+### 6. Edge Cases & Exception Handling Improvements
+- Graceful handling of concurrent borrowing conflicts with retry mechanisms
+- Improved validation for edge cases (e.g., borrowing on same day as return, maximum borrow limits)
+- Comprehensive error codes and user-friendly error messages for all scenarios
+
+### 7. CI/CD Pipeline Enhancements
+- Separate workflows for `develop` and `main` branches with appropriate test stages
+- **Develop branch**: Run unit tests, integration tests, and code quality checks on every push
+- **Main branch**: Full test suite (unit + integration + E2E), security scans, and production Docker image builds
+
+### 8. Expanded Inheritance Hierarchy
+Complete the inheritance design for all library item types:
+
+```
+LibraryItem (abstract)
+├── PhysicalItem (abstract)
+│   ├── Book (concrete) ✅ Currently implemented
+│   └── Magazine (concrete)
+└── DigitalItem (abstract)
+    ├── Ebook (concrete) with author, ISBN, edition, file format, download link
+    └── AudioBook (concrete) with author, narrator, duration, ISBN, format
+```
+
+### 9. Better Documentation
+
+---
+
+**Note:** These enhancements are prioritized to improve system scalability, maintainability, and user experience. The authentication, analytics, and deployment improvements would provide immediate value, while the inheritance expansion and edge case handling ensure long-term system robustness.
 
 ---
 
@@ -279,6 +356,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 Project Link: [https://github.com/MahdyMokh7/library-management-api](https://github.com/MahdyMokh7/library-management-api)
 
----
-
-**Made with ❤️ by Mehdy Mokhtari**
