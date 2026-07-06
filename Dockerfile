@@ -1,5 +1,3 @@
-# Multi-stage Dockerfile for Library Management System
-
 # ---- Build Stage ----
 # Using Amazon Corretto 22 for reliable, production-grade Java builds
 FROM amazoncorretto:22.0.1-alpine AS build

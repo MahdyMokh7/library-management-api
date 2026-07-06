@@ -57,20 +57,18 @@ Before running the project, ensure you have the following installed:
 
 ## 🚀 Quick Start
 
-
-
 ### Default (Recommended)
 
 The project includes an automation script that handles everything from formatting to deployment.
 
 **First time only (if on Unix/Linux-based system):**
 ```bash
-chmod +x start.sh
+chmod +x scripts/start.sh
 ```
 
 **Run the full stack:**
 ```bash
-./start.sh run
+./scripts/start.sh run
 ```
 
 This single command:
@@ -83,7 +81,7 @@ This single command:
 
 **Reset everything:**
 ```bash
-./start.sh clean
+./scripts/start.sh clean
 ```
 Stops all containers and removes database volumes.
 

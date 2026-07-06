@@ -8,6 +8,7 @@ services:
       POSTGRES_USER: library_user
       POSTGRES_PASSWORD: library_password
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+      SPRING_PROFILES_ACTIVE: dev
     ports:
       - "5432:5432"
     volumes:
@@ -41,6 +42,29 @@ services:
       - "8080:8080"
     networks:
       - library-network
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  pgadmin:
+    image: dpage/pgadmin4:8.10
+    container_name: library-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@library.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - library-network
+    profiles:
+      - dev
 
 volumes:
   postgres_data:
